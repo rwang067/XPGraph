@@ -3,8 +3,8 @@
 ## Test graph ingest time of GraphOne-P, then conduct graph query of each algorithm one by one. 
 
 gop_path="/home/zorax/XPGraph/AE_submit/gop/PMGraphOne/"
-pmem0="/pmem/zorax/testGraphOne/"
-pmem1="/mnt/pmem1/zorax/testGraphOne/"
+pmem0="/pmem/wr/testGraphOne/"
+pmem1="/mnt/pmem1/wr/testGraphOne/"
 dataset_path="/mnt/nvme1/wr/dataset/"
 
 

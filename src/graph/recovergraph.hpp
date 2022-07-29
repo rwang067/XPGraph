@@ -214,8 +214,8 @@ void load_graph_pmem(std::string idirname, levelgraph_t *levelgraph) {
 //         }
 //     }
 
-//     // std::string o_dir = "/home/zorax/XPGraph/data/out";
-//     std::string o_dir = "/mnt/pmem1/zorax/Recovery";
+//     // std::string o_dir = "/home/wr/XPGraph/data/out";
+//     std::string o_dir = "/mnt/pmem1/wr/Recovery";
 //     FILE* file = fopen((o_dir + "/out_graph.txt").c_str(), "wb+");
 //     assert(file != 0);
 //     fwrite(rblks_out, sizeof(rblock_t), nverts, file);
@@ -258,8 +258,8 @@ void load_graph_pmem(std::string idirname, levelgraph_t *levelgraph) {
 
 //     char* out_paddr_base = 0;
 //     char* in_paddr_base = 0;
-//     // std::string recovery_dir = "/home/zorax/XPGraph/data/out/";
-//     std::string recovery_dir = "/mnt/pmem1/zorax/Recovery";
+//     // std::string recovery_dir = "/home/wr/XPGraph/data/out/";
+//     std::string recovery_dir = "/mnt/pmem1/wr/Recovery";
 
 //     FILE* file = fopen((recovery_dir + "/info.txt").c_str(), "rb");
 //     assert(file != 0);
