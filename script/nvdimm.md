@@ -1,57 +1,60 @@
-# NVDIMM 学习
+# NVDIMM
 
-## PM 配置 Memory Mode
+## Provision Memory Mode
 
-在内存模式下，PM 模块作为系统内存被操作系统控制，任何 DDR 都作为 PM 模块的 cache。
-
-首先，查看系统当前 DIMM 设备的情况
+First delete the current namespaces and 'goal' which determines the region configuration at boot time. Then install the new DCPMM and create a new goal. Finally, you can then create the namespaces.
 
 ```bash
-ipmctl show -topology
-ipmctl show -socket
-ipmctl show -dimm 
-ipmctl show -memoryresources
-```
-
-如果 PM 已经预先配置了其他模式，则需要先清除现有模式。
-
-```bash
+# Check for namespaces
 ndctl list -iN
+# Delete all valid namespaces on all regions
 ndctl destroy-namespace -f all
+# Delete the region goal
 ipmctl delete -goal
+# reboot the host
 sudo systemctl reboot
 ```
 
-配置当前 PMEM 为 memory mode。
+Configures all the pmem module capacity in Memory Mode.
 
 ```bash
 ipmctl create -goal MemoryMode=100
 ```
 
-另外需要恢复成 APP-Direct 模式。首先，清除已有 goal，并设置为 appdirect
+## Provision App Direct
+
+First delete the current namespaces and 'goal' which determines the region configuration at boot time. Then configures all the pmem module capacity in AppDirect mode with all modules in an interleaved set.
 
 ```bash
+# Check for namespaces
+ndctl list -iN
+# Delete all valid namespaces on all regions
+ndctl destroy-namespace -f all
+# Delete the region goal
 ipmctl delete -goal
-ipmctl create -goal PersistentMemoryType=AppDirect
+# reboot the host
 systemctl reboot
 ```
 
-重启后，查看设备情况，并创建新的 namespace，直到所有空间分配结束。
-
+Configures all the pmem module capacity in Memory Mode.
 ```bash
-ndctl list -R
-ndctl create-namespace --mode=fsdax # run N times
+ipmctl create -goal PersistentMemoryType=AppDirect
 ```
 
-运行 `ndctl list` ，观察到新的 blockdev 已经成功分配。最后，使用 dax 进行文件系统挂载，挂载 pmem 文件夹。
+Then reboot the host and create new namespace as `fsdax` mode until no space left on device.
 
 ```bash
-mkfs.ext4 -b 4096 -E stride=512 -F /dev/pmem0
-sudo mkfs.ext4 -b 4096 -E stride=512 -F /dev/pmem1
+# run N times until no space left on device
+ndctl create-namespace --mode=fsdax 
+```
 
-sudo mount -o dax /dev/pmem0 /pmem
-sudo mount -o dax /dev/pmem1 /mnt/pmem1
+Finally, to get the DAX functionality, mount the file system with the dax mount option. File system creation requires no special arguments.
 
-df -lh
+```bash
+mkfs.ext4 -b 4096 -E stride=512 -F ${device_path_0}
+mount -o dax ${device_path_0} ${pmem0_path}
+mkfs.ext4 -b 4096 -E stride=512 -F ${device_path_1}
+mount -o dax ${device_path_1} ${pmem1_path}
+...
 ```
 
