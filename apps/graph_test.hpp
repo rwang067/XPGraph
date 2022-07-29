@@ -146,7 +146,7 @@ void test_in_neighbors(XPGraph *xpgraph){
 //     metrics m("test_write_rate");
 //     m.start_time("0-readbuf_to_dram");
 //     char* buf = 0;
-//     index_t size = alloc_mem_dir("/home/wr/data/Friendster/bin", "/pmem/wr/testLevelGraph/", &buf); // 输入文件读入 DRAM
+//     index_t size = alloc_mem_dir("/home/wr/data/Friendster/bin", "/pmem/wr/XPGraphDB/", &buf); // 输入文件读入 DRAM
 //     if (size != read_bin_dir("/home/wr/data/Friendster/bin", buf)) {
 //         logstream(LOG_FATAL) << "Read wrong size!" << std::endl;
 //         assert(0);

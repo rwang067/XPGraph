@@ -29,7 +29,7 @@ index_t buf_and_log(const char* buf, size_t size, levelgraph_t *levelgraph, inde
 }
 
 void prinf_timecost_breakdown(metrics &m, double time){
-    std::string statistic_filename = "pmg.csv";
+    std::string statistic_filename = "xpgraph_update.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
 
@@ -108,7 +108,7 @@ void print_mempool_usage(levelgraph_t *levelgraph){
     // double pm_dm_used_ratio = pm_used * 1.0 / dm_used;
     // double pm_rss_ratio = pm_used * 1.0 / rss;
 
-    std::string statistic_filename = "pmg.csv";
+    std::string statistic_filename = "xpgraph_update.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     ofs << "[Memory]:" //<< time << "," << levelgraph->get_snapid() << ","
@@ -120,6 +120,7 @@ void print_mempool_usage(levelgraph_t *levelgraph){
     // << B2GB(local_buf_size) << "," << B2GB(elog_size) << ","
     // << B2GB(dm_used) << "," << B2GB(pm_used) << "," 
     // << pm_dm_used_ratio << "," << pm_rss_ratio << ","; //<< std::endl;
+    ofs << std::endl;
     ofs.close();
 }
 
@@ -224,7 +225,7 @@ void graph_recover(std::string filename, levelgraph_t *levelgraph, metrics &m) {
     end = mywtime ();
     cout << "Recover graph time = " << end - start << endl;
     
-    // std::string statistic_filename = "pmg.csv";
+    // std::string statistic_filename = "xpgraph_update.csv";
     // std::ofstream ofs;
     // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     // ofs << "load:" << end - start << ","; //<< std::endl;

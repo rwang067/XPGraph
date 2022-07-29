@@ -112,10 +112,10 @@ static VARIABLE_IS_NOT_USED void metrics_report(metrics &m) {
             basic_reporter rep;
             m.report(rep);
         } else if (repname == "file") {
-            file_reporter rep(get_option_string("metrics.reporter.filename", "pmg_metrics.txt"));
+            file_reporter rep(get_option_string("metrics.reporter.filename", "xpgraph_metrics.txt"));
             m.report(rep);
         } else if (repname == "html") {
-            html_reporter rep(get_option_string("metrics.reporter.htmlfile", "pmg_metrics.html"));
+            html_reporter rep(get_option_string("metrics.reporter.htmlfile", "xpgraph_metrics.html"));
             m.report(rep);
         } else {
             logstream(LOG_WARNING) << "Could not find metrics reporter with name [" << repname << "], ignoring." << std::endl;

@@ -124,16 +124,6 @@ index_t test_bfs(XPGraph* xpgraph, index_t root_count){
         delete [] status;
     }
     return total_count;
-		
-    // double end1 = mywtime();
-    // std::string statistic_filename = "pmg_query.csv";
-    // std::ofstream ofs;
-    // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
-    // ofs << "BFS root = "<< root << ", Time = " << end1 - start1 << ", total count = " << total_count << std::endl;
-    // ofs.close();
-    // // std::cout << "BFS root = "<< root << ", Time = " << end1 - start1 << ", total count = " << total_count << std::endl;
-    // // print_bfs_summary(status, level, v_count);
-    // return end1 - start1;
 }
 
 index_t test_bfs_numa(XPGraph* xpgraph, index_t root_count){
@@ -301,13 +291,4 @@ index_t test_bfs_numa(XPGraph* xpgraph, index_t root_count){
         delete [] status;
     }
     return total_count;
-		
-    // double end1 = mywtime();
-    // std::string statistic_filename = "pmg_query.csv";
-    // std::ofstream ofs;
-    // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
-    // ofs << "BFS root = "<< root << ", Time = " << end1 - start1 << ", total count = " << total_count << std::endl;
-    // ofs.close();
-    
-    // return end1 - start1;
 }

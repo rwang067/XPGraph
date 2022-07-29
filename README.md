@@ -120,10 +120,10 @@ or use following command-line options.
 
 ```bash
 $ cd XPGraph
-$ ./bin/main -f ./Dataset/Friendster/xx -v 68349467 -j 0 -q 1 -p0 *path_to_pmem0*/testXPGraph/ -p1 *path_to_pmem1*/testXPGraph/ --vbuf_pool 16 pblk_pools 64
+$ ./bin/main -f ./Dataset/Friendster/xx -v 68349467 -j 0 -q 1 -p0 *path_to_pmem0*/XPGraphDB/ -p1 *path_to_pmem1*/XPGraphDB/ --vbuf_pool 16 pblk_pools 64
 ```
 
-The key statistic data would be recorded to `pmg.csv` file, e.g.
+The key statistic data would be recorded to `xpgraph_update.csv` file, e.g.
 ```bash
 # [UpdateTimings]:ingest_time(s),archive_count,archive_time(classify+buffer),flush_all_time(s),make_graph_time(s),[Memory]: vbuf_pool_size,pblk_pool_size,[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)
 [UpdateTimings]:34.5745,67,31.4394(7.71303+23.726),3.51127,34.9569,[Memory]:5.17188,13.6719(7.32812+6.34375),[QueryTimings]:2.31569,12.6733,2.35859,3.31254,
@@ -133,10 +133,10 @@ The key statistic data would be recorded to `pmg.csv` file, e.g.
 
 ```bash
 $ cd XPGraph
-$ ./bin/main -j 3 -p0 *path_to_pmem0*/testXPGraph/ -p1 *path_to_pmem1*/testXPGraph/ --recovery *path_to_recovery*
+$ ./bin/main -j 3 -p0 *path_to_pmem0*/XPGraphDB/ -p1 *path_to_pmem1*/XPGraphDB/ --recovery *path_to_recovery*
 ```
 
-The key statistic data would be recorded to `pmg.csv` file, e.g.
+The key statistic data would be recorded to `xpgraph_update.csv` file, e.g.
 ```bash
 # [RecoverTimings]:recover_time(load+recover),
 [RecoverTimings]:6.93418(3.18781+3.74637),

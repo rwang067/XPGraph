@@ -59,7 +59,7 @@ vector< vector<vid_t> > root_generator_numa(XPGraph* xpgraph, index_t query_coun
 }
 
 void test_graph_benchmarks(XPGraph* xpgraph){
-    std::string statistic_filename = "pmg.csv";
+    std::string statistic_filename = "xpgraph_query.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     ofs << "[QueryTimings]:" ;
@@ -104,6 +104,7 @@ void test_graph_benchmarks(XPGraph* xpgraph){
         }
     }
     #pragma endregion test_graph_benchmarks
+    ofs << std::endl;
     ofs.close();
 }
 
@@ -111,7 +112,7 @@ void test_graph_benchmarks_numa(XPGraph* xpgraph){
     uint8_t count = xpgraph->get_query_count();
     if(count == 0) return;
     
-    std::string statistic_filename = "pmg.csv";
+    std::string statistic_filename = "xpgraph_query.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     ofs << "[QueryTimings]:" ;
@@ -156,5 +157,6 @@ void test_graph_benchmarks_numa(XPGraph* xpgraph){
         }
     }
     #pragma endregion test_graph_benchmarks_numa
+    ofs << std::endl;
     ofs.close();
 }

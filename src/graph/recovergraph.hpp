@@ -160,11 +160,11 @@ void load_graph_pmem(std::string idirname, levelgraph_t *levelgraph) {
     end = mywtime();
     recover_time = end - start;
 
-    std::string statistic_filename = "pmg.csv";
+    std::string statistic_filename = "xpgraph_recover.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     ofs << "[RecoverTimings]:" << read_time+recover_time 
-        << "(" << read_time << "+" << recover_time << ")" << ","; //std::endl;
+        << "(" << read_time << "+" << recover_time << ")," << std::endl;
     ofs.close();
 }
 

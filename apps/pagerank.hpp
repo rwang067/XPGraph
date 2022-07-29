@@ -148,7 +148,7 @@ void test_pagerank_pull(XPGraph* xpgraph, int iteration_count) {
 
         std::swap(prior_rank_array, rank_array);
         // double end1 = mywtime();
-        // std::string statistic_filename = "pmg_query.csv";
+        // std::string statistic_filename = "xpgraph_query.csv";
         // std::ofstream ofs;
         // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
         // ofs << "Iteration Time = " << end1 - start1 << std::endl;
@@ -156,7 +156,7 @@ void test_pagerank_pull(XPGraph* xpgraph, int iteration_count) {
     }
     // double end = mywtime();
 
-    // std::string statistic_filename = "pmg_query.csv";
+    // std::string statistic_filename = "xpgraph_query.csv";
     // std::ofstream ofs;
     // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     // ofs << "PR Time = " << end - start << std::endl;
@@ -258,7 +258,7 @@ void test_pagerank_push(XPGraph* xpgraph, int iteration_count){
         }
         std::swap(prior_rank_array, rank_array);
         // double end1 = mywtime();
-        // std::string statistic_filename = "pmg_query.csv";
+        // std::string statistic_filename = "xpgraph_query.csv";
         // std::ofstream ofs;
         // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
         // ofs << "Iteration Time = " << end1 - start1 << std::endl;
@@ -267,7 +267,7 @@ void test_pagerank_push(XPGraph* xpgraph, int iteration_count){
     }	
     // double end = mywtime();
 
-    // std::string statistic_filename = "pmg_query.csv";
+    // std::string statistic_filename = "xpgraph_query.csv";
     // std::ofstream ofs;
     // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     // ofs << "PR Time = " << end - start << std::endl;
@@ -400,7 +400,7 @@ void test_pagerank_pull_numa(XPGraph* xpgraph, int iteration_count){
         std::swap(prior_rank_array, rank_array);
         // double end1 = mywtime();
 
-        // std::string statistic_filename = "pmg_query.csv";
+        // std::string statistic_filename = "xpgraph_query.csv";
         // std::ofstream ofs;
         // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
         // ofs << "Iteration Time = " << end1 - start1 << std::endl;
@@ -408,7 +408,7 @@ void test_pagerank_pull_numa(XPGraph* xpgraph, int iteration_count){
     }
     // double end = mywtime();
 
-    // std::string statistic_filename = "pmg_query.csv";
+    // std::string statistic_filename = "xpgraph_query.csv";
     // std::ofstream ofs;
     // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     // ofs << "PR Time = " << end - start << std::endl;

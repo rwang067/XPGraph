@@ -68,8 +68,8 @@ void args_config(int argc, const char ** argv) {
     // Basic arguments for system info
     THD_COUNT = get_option_int("-t", 16); // Thread count for buffering and flushing. Default: 16.
     NUM_SOCKETS = get_option_int("-s", 2); // Sockets count. Default: 2.
-    NVMPATH0 = get_option_string("-p0", "/pmem/wr/testLevelGraph/");  // Path of pmem0 of NUMA node0.
-    NVMPATH1 = get_option_string("-p1", "/mnt/pmem1/wr/testLevelGraph/"); // Path of pmem1 of NUMA node1.
+    NVMPATH0 = get_option_string("-p0", "/pmem/wr/XPGraphDB/");  // Path of pmem0 of NUMA node0.
+    NVMPATH1 = get_option_string("-p1", "/mnt/pmem1/wr/XPGraphDB/"); // Path of pmem1 of NUMA node1.
     NUMA_OPT = get_option_int("-numa", 2); // Implementation of numa optimization: 0 for closing NUMA optimization, 
                                         // 1 for out/in-graph based implementation, 2 for sub-graph based implementation;
 

@@ -150,7 +150,7 @@ double test_connected_components(levelgraph_t* levelgraph, metrics &m, index_t n
     Compress(v_count, comp);
 
     double end = mywtime();
-    std::string statistic_filename = "pmg_query.csv";
+    std::string statistic_filename = "xpgraph_query.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     ofs << "CC Time = " << end - start << std::endl;
@@ -272,7 +272,7 @@ double test_connected_components_numa(levelgraph_t* levelgraph, metrics &m, inde
     Compress(v_count, comp);
 
     double end = mywtime();
-    std::string statistic_filename = "pmg_query.csv";
+    std::string statistic_filename = "xpgraph_query.csv";
     std::ofstream ofs;
     ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     ofs << "CC Time = " << end - start << std::endl;

@@ -54,7 +54,7 @@ index_t test_2hop(XPGraph* xpgraph, vector<vid_t> query_verts){
     return deg_sum;
 
     // double end = mywtime();
-    // std::string statistic_filename = "pmg_query.csv";
+    // std::string statistic_filename = "xpgraph_query.csv";
     // std::ofstream ofs;
     // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     // ofs << "test_2hop for " << query_count << " vertices, sum of their 2-hop neighbors = " << deg_sum << ", 2 Hop Time = " << end - start << std::endl;
@@ -159,7 +159,7 @@ double test_2hop_gone(XPGraph* xpgraph, vector<vid_t> query_verts) {
     return sum2;
 
     // double end = mywtime();
-    // std::string statistic_filename = "pmg_query.csv";
+    // std::string statistic_filename = "xpgraph_query.csv";
     // std::ofstream ofs;
     // ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
     // ofs << "test_2hop for " << query_count << " vertices, sum of their 2-hop neighbors = " << sum2 << ", 2 Hop Time = " << end - start << std::endl;
