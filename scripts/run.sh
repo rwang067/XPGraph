@@ -8,8 +8,16 @@
 export LD_LIBRARY_PATH=./src/api/lib/:$LD_LIBRARY_PATH
 echo "LD_LIBRARY_PATH = " $LD_LIBRARY_PATH
 
-mkdir /pmem/wr/testGraphOne/
-mkdir /mnt/pmem1/wr/testGraphOne/
+# config the path below according to your host
+dataset_path="/mnt/nvme1/wr/dataset/"   # path to the dataset
+pmem0="/pmem/wr/XPGraphDB0/"            # path to 
+pmem1="/mnt/pmem1/wr/GraphDB1/"         # path to the dataset
+recovery_path="/mnt/pmem1/wr/Recovery/" # path to save recovery info for XPGraph
+god_path="./baseline/GraphOne-D/"       # path to the baseline GraphOne-D
+gop_path="./baseline/GraphOne-P/"       # path to the baseline GraphOne-P 
+
+mkdir ${pmem0}
+mkdir ${pmem1}
 
 mkdir results
 mkdir results/fig11
@@ -21,33 +29,39 @@ mkdir results/fig15
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test GraphOne-P performance, including Figure 11 (Graph ingest time cost for non-volatile systems), Figure 14 (Graph query performance)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 17.2 hours ]" >> scripts/progress.txt
-bash scripts/GraphOne-P.sh
+bash scripts/GraphOne-P.sh ${gop_path} ${pmem0} ${pmem1} ${dataset_path}
 sleep 10s
 
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test XPGraph performance, including Figure 11 (Graph ingest time cost for non-volatile systems), Figure 14 (Graph query performance), as well as Figure 15 (Graph recovery performance)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 12.9 hours ]" >> scripts/progress.txt
-bash scripts/XPGraph.sh
+bash scripts/XPGraph.sh ${pmem0} ${pmem1} ${dataset_path} ${recovery_path}
 sleep 10s
 
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test XPGraph-B performance, including Figure 11 (Graph ingest time cost for non-volatile systems)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 5.5 hours ]" >> scripts/progress.txt
-bash scripts/XPGraph-B.sh
+bash scripts/XPGraph-B.sh ${pmem0} ${pmem1} ${dataset_path}
 sleep 10s
 
+# Figure 15
+cur_time=$(date "+%Y-%m-%d %H:%M:%S")
+echo $cur_time "Test GraphOne-D performance, including Figure 15 (Graph recovery performance)..." >> scripts/progress.txt
+echo "[ Expected completion time: around 1.6 hours ]" >> scripts/progress.txt
+bash scripts/GraphOne-D-RE.sh ${god_path} ${dataset_path}
+sleep 10s
 
 # Figure 12
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test GraphOne-D performance in DRAM-Only system, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 1.2 hours ]" >> scripts/progress.txt
-bash scripts/GraphOne-D-DO.sh
+bash scripts/GraphOne-D-DO.sh ${god_path} ${dataset_path}
 sleep 10s
 
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test XPGraph-D performance in DRAM-Only system, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 0.9 hours ]" >> scripts/progress.txt
-bash scripts/XPGraph-D-DO.sh
+bash scripts/XPGraph-D-DO.sh ${dataset_path}
 # 
 # !! Switch Optane to Memory Mode !! 
 # !! Refer to scripts/nvdimm.md !!
@@ -55,17 +69,10 @@ bash scripts/XPGraph-D-DO.sh
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test GraphOne-D performance under Memory Mode of Optane, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 6.6 hours ]" >> scripts/progress.txt
-bash scripts/GraphOne-D-MM.sh
+bash scripts/GraphOne-D-MM.sh ${god_path} ${dataset_path}
 sleep 10s
 
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Test XPGraph-D performance under Memory Mode of Optane, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
 echo "[ Expected completion time: around 4.0 hours ]" >> scripts/progress.txt
-bash scripts/XPGraph-D-MM.sh
-
-# Figure 15
-cur_time=$(date "+%Y-%m-%d %H:%M:%S")
-echo $cur_time "Test GraphOne-D performance, including Figure 15 (Graph recovery performance)..." >> scripts/progress.txt
-echo "[ Expected completion time: around 1.6 hours ]" >> scripts/progress.txt
-bash scripts/GraphOne-D-RE.sh
-sleep 10s
+bash scripts/XPGraph-D-MM.sh ${dataset_path}
