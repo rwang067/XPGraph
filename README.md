@@ -58,28 +58,42 @@ $ make main
 
 ### Dataset preparing
 
+XPGraph provides interface with edge list data in binary format from a file. For convenience, we provide a script to convert input data from text format to binary format.
+
+```bash
+## Change to binary format
+$ cd preprocess
+$ g++ text2bin.cpp -o text2bin
+$ ./text2bin [path_to_txt/data.txt] [path_to_binary/data.bin]
+```
+
 **Input Graph Data:** Edge list in binary format. 
 
 **Example1: LiveJournal (small graph for function test):**
 ```bash
 ## Download and unzip
 $ mkdir Dataset && cd Dataset
+$ mkdir LiveJournal && cd LiveJournal
+$ mkdir txt && cd txt
 $ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
 $ gunzip soc-LiveJournal1.txt.gz
 
-## Change to binary format
-$ ./text2bin soc-LiveJournal1.txt out.bin
+$ cd .. && mkdir bin
+$ *preprocess_path*/text2bin txt/soc-LiveJournal1.txt bin/out.bin
 ```
 
 **Example2: Friendster (Medium graph, one of our evaluation tested dataset):**
 ```bash
 ## Download and unzip
 $ mkdir Dataset && cd Dataset
+$ mkdir Friendster && cd Friendster
+$ mkdir txt && cd txt
 $ wget http://konect.cc/files/download.tsv.friendster.tar.bz2 
 $ tar -jxvf friendster.tar.bz2
 
 ## Change to binary format
-$ ./text2bin out.friendster out.bin
+$ cd .. && mkdir bin
+$ *preprocess_path*/text2bin txt/out.friendster bin/out.bin
 ```
 
 ### Running
