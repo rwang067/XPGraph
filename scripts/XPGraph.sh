@@ -15,7 +15,7 @@ echo $cur_time "Graph query time of XPGraph, with command: ./bin/main -j 0 -p0 $
 echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)," >> xpgraph_query.csv
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover Twitter)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -35,7 +35,7 @@ echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> 
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover Friendster)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
 
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -55,7 +55,7 @@ echo $cur_time "Graph query time of XPGraph, with command: ./bin/main -j 0 -p0 $
 echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> xpgraph_query.csv
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover UKDomain)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -73,7 +73,7 @@ echo $cur_time "Graph query time of XPGraph, with command: ./bin/main -j 0 -p0 $
 echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> xpgraph_query.csv
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover Kron28)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -91,7 +91,7 @@ echo $cur_time "Graph query time of XPGraph, with command: ./bin/main -j 0 -p0 $
 echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> xpgraph_query.csv
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover Yahoo)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -109,7 +109,7 @@ echo $cur_time "Graph query time of XPGraph, with command: ./bin/main -j 0 -p0 $
 echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> xpgraph_query.csv
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover Kron29)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -127,7 +127,7 @@ echo $cur_time "Graph query time of XPGraph, with command: ./bin/main -j 0 -p0 $
 echo "[QueryTimings]:time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> xpgraph_query.csv
 echo $cur_time "Graph recover time of XPGraph, with command: ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} (Recover Kron30)" >> xpgraph_recover.csv
 echo "[RecoverTimings]:recover_time(load+recover)," >> xpgraph_recover.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s

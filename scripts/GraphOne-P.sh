@@ -12,7 +12,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Twitter/bin -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -26,7 +26,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Friendster/all/bin -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -40,7 +40,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Ukdomain/shuffle -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -54,7 +54,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Kron28/bin -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -68,7 +68,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Kron29/bin -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -82,7 +82,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Kron30/bin -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
@@ -96,7 +96,7 @@ echo $cur_time "Graph ingest time of GraphOne-P, with command: ${gop_path}build/
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> gop_update.csv
 echo $cur_time "Graph query time of GraphOne-P, with command: ${gop_path}build/graphone32 -a ${pmem0} -b ${pmem1}  -i ${dataset_path}Yahoo/bin64 -v 61578415 -j 0 -s 1 -d 1 -t 16" >> gop_query.csv
 echo "time_1hop(s),time_2hop(s),time_bfs(s),time_pagerank(s)" >> gop_query.csv
-for(( times = 0; times < 2; times++))
+for(( times = 0; times < 10; times++))
 do
     echo "times = " $times " from echo"
     sleep 10s
