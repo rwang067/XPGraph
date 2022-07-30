@@ -96,6 +96,22 @@ $ cd .. && mkdir bin
 $ *preprocess_path*/text2bin txt/out.friendster bin/out.bin
 ```
 
+**Example3: Kron28 (Medium synthetic kronecker graph generated using graph500 generator graph):**
+```bash
+## Build graph500 and generate kron28
+## make sure openmpi install on your host
+$ git clone https://github.com/the-data-lab/gstore.git
+$ cd gstore/graph500-generator
+$ make
+$ ./generator_test_mpi 28 8 1 1
+
+## Change to binary format
+$ mkdir Dataset && cd Dataset
+$ mkdir kron28 && cd kron28
+$ mkdir bin
+$ *preprocess_path*/text2bin *txt_path*/scale-28-rank-0-of-1-par-rowcol-0-0.dat bin/out.bin
+```
+
 ### Running
 
 **Arguments setup:**
