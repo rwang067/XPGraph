@@ -42,7 +42,7 @@ To run test on the baseline, you can refer to https://github.com/ZoRax-A5/GraphO
 **Example1: Ingest all edges in Friendster dataset(directed, binary input) on GraphOne-D.**
 
 ```bash
-$ cd baseline/GraphOne-D
+$ cd baselines/GraphOne-D
 $ ./build/graphone32 -i ./Dataset/Friendster/xx -v 68349467 -j 0 -s 1 -d 1 -t 16
 
 ```
@@ -50,7 +50,7 @@ $ ./build/graphone32 -i ./Dataset/Friendster/xx -v 68349467 -j 0 -s 1 -d 1 -t 16
 **Example2: Ingest all edges in Friendster dataset(directed, binary input) on GraphOne-P, and then execute each implemanted graph algorithm one time.**
 
 ```bash
-$ cd baseline/GraphOne-P
+$ cd baselines/GraphOne-P
 $ ./build/graphone32 -i ./Dataset/Friendster/xx -v 68349467 -j 0 -s 1 -d 1 -t 16 -a *path_to_pmem0*/XPGraphDB0/ -b *path_to_pmem1*/XPGraphDB1/
 ```
 
