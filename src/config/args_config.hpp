@@ -68,8 +68,8 @@ void args_config(int argc, const char ** argv) {
     // Basic arguments for system info
     THD_COUNT = get_option_int("-t", 16); // Thread count for buffering and flushing. Default: 16.
     NUM_SOCKETS = get_option_int("-s", 2); // Sockets count. Default: 2.
-    NVMPATH0 = get_option_string("-p0", "/pmem/wr/XPGraphDB/");  // Path of pmem0 of NUMA node0.
-    NVMPATH1 = get_option_string("-p1", "/mnt/pmem1/wr/XPGraphDB/"); // Path of pmem1 of NUMA node1.
+    NVMPATH0 = get_option_string("-p0", "/pmem/zorax/GraphDB0/");  // Path of pmem0 of NUMA node0.
+    NVMPATH1 = get_option_string("-p1", "/mnt/pmem1/zorax/GraphDB1/"); // Path of pmem1 of NUMA node1.
     NUMA_OPT = get_option_int("-numa", 2); // Implementation of numa optimization: 0 for closing NUMA optimization, 
                                         // 1 for out/in-graph based implementation, 2 for sub-graph based implementation;
 
@@ -130,7 +130,7 @@ void args_config(int argc, const char ** argv) {
 
     CLWB = get_option_int("--clwb", 0); // clwb = 1 for clwb proactively
     PERSIST = get_option_int("--persist", 1); // persist = 1 for saving XPGraph information, used for recovery
-    RECYPATH = get_option_string("--recovery", "/mnt/pmem1/wr/Recovery/");  // Path of recovery data.
+    RECYPATH = get_option_string("--recovery", "/mnt/pmem1/zorax/Recovery/");  // Path of recovery data.
 }
 
 void prinf_config(){
