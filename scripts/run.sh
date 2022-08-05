@@ -18,9 +18,9 @@ echo "LD_LIBRARY_PATH = " $LD_LIBRARY_PATH
 
 # config the path below according to your host
 dataset_path="/mnt/nvme1/wr/dataset/"   # path to the dataset directory
-pmem0="/pmem/wr/GraphDB0/"            # path to the graph database information stored in PMEM0
-pmem1="/mnt/pmem1/wr/GraphDB1/"         # path to the graph database information stored in PMEM1
-recovery_path="/mnt/pmem1/wr/Recovery/" # path to save recovery info for XPGraph
+pmem0="/pmem/zorax/GraphDB0/"            # path to the graph database information stored in PMEM0
+pmem1="/mnt/pmem1/zorax/GraphDB1/"         # path to the graph database information stored in PMEM1
+recovery_path="/mnt/pmem1/zorax/Recovery/" # path to save recovery info for XPGraph
 god_path="./baseline/GraphOne-D/"       # path to the baseline GraphOne-D
 gop_path="./baseline/GraphOne-P/"       # path to the baseline GraphOne-P 
 
