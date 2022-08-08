@@ -27,7 +27,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Twitter/bin -v 61588415 --vbuf_pool 8 --pblk_pools 32 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 61588415 --vbuf_pool 8 --pblk_pools 32 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
@@ -48,7 +48,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Friendster/all/bin -v 68349467 --vbuf_pool 8 --pblk_pools 64 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 68349467 --vbuf_pool 8 --pblk_pools 64 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
@@ -69,7 +69,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Ukdomain/shuffle -v 105153953 --vbuf_pool 8 --pblk_pools 64 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 105153953 --vbuf_pool 8 --pblk_pools 64 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
@@ -88,7 +88,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Kron28/bin -v 268435456 --vbuf_pool 16 --pblk_pools 64 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 268435456 --vbuf_pool 16 --pblk_pools 64 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
@@ -107,7 +107,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Yahoo/bin32 -v 1413511394 --vbuf_pool 16 --pblk_pools 192 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 1413511394 --vbuf_pool 16 --pblk_pools 192 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
@@ -126,7 +126,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Kron29/bin -v 536870912 --vbuf_pool 32 --pblk_pools 128 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 536870912 --vbuf_pool 32 --pblk_pools 128 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
@@ -145,7 +145,7 @@ do
     sleep 10s
     clear_pmem
     ./bin/main -j 0 -p0 $pmem0 -p1 $pmem1 -f ${dataset_path}Kron30/bin -v 1073741824 --vbuf_pool 64 --pblk_pools 192 -q 1
-    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path}
+    ./bin/main -j 3 -p0 $pmem0 -p1 $pmem1 --recovery ${recovery_path} -v 1073741824 --vbuf_pool 64 --pblk_pools 192 -q 1
 done
 echo >> xpgraph_update.csv
 echo >> xpgraph_query.csv
