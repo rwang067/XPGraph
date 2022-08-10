@@ -99,13 +99,15 @@ make install
 
 ### Using NOVA
 
-Reboot the system and boot into the correct kernel with NOVA module. After the OS has booted, you can initialize a NOVA instance that enable all Nova's data protection features with the following commands:
+Reboot the system and boot into the correct kernel with the NOVA module. After the OS has booted, you can initialize a NOVA instance that configs in relaxed mode with the following commands:
 
 ```bash
-$ modprobe nova metadata_csum=1\
-  	       data_csum=1\
-	       data_parity=1\
-	       wprotect=1
+## config in relaxed mode
+$ modprobe nova metadata_csum=0\
+  	       data_csum=0\
+	       data_parity=0\
+	       wprotect=0\
+           inplace_data_updates=1
 $ mount -t NOVA -o init ${device_path_0} ${pmem0_path}
 $ mount -t NOVA -o init ${device_path_1} ${pmem1_path}
 $ ...
