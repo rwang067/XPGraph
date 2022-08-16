@@ -68,8 +68,8 @@ void args_config(int argc, const char ** argv) {
     // Basic arguments for system info
     THD_COUNT = get_option_int("-t", 16); // Thread count for buffering and flushing. Default: 16.
     NUM_SOCKETS = get_option_int("-s", 2); // Sockets count. Default: 2.
-    NVMPATH0 = get_option_string("-p0", "/pmem/zorax/GraphDB0/");  // Path of pmem0 of NUMA node0.
-    NVMPATH1 = get_option_string("-p1", "/mnt/pmem1/zorax/GraphDB1/"); // Path of pmem1 of NUMA node1.
+    NVMPATH0 = get_option_string("-p0", "/pmem/wr/GraphDB0/");  // Path of pmem0 of NUMA node0.
+    NVMPATH1 = get_option_string("-p1", "/mnt/pmem1/wr/GraphDB1/"); // Path of pmem1 of NUMA node1.
     NUMA_OPT = get_option_int("-numa", 2); // Implementation of numa optimization: 0 for closing NUMA optimization, 
                                         // 1 for out/in-graph based implementation, 2 for sub-graph based implementation;
 
@@ -118,6 +118,12 @@ void args_config(int argc, const char ** argv) {
 
     /* ---------------------------------------------------------------------- */
     // Other arguments config
+    CLWB = get_option_int("--clwb", 0); // clwb = 1 for clwb proactively
+    PERSIST = get_option_int("--persist", 1); // persist = 1 for saving XPGraph information, used for recovery
+    RECYPATH = get_option_string("--recovery", "/mnt/pmem1/wr/Recovery/");  // Path of recovery data.
+
+    /* ---------------------------------------------------------------------- */
+    // Variant systems
     BATTERY = get_option_int("--battery", 0); // 1 for XPGraph-B by allowing overwritting buffered edges. Default: 0.
     DRAMONLY = get_option_int("--dram_only", 0); // 1 for XPGraph-D by storing all data structure in DRAM and set the per-vertex buffer size as fixed 64B. Default: 0.
     if(DRAMONLY == 1){
@@ -126,11 +132,14 @@ void args_config(int argc, const char ** argv) {
         MIN_VBUF_BIT  = log2(MIN_VBUF_SIZE); // 4
         MAX_VBUF_CAP = (MAX_VBUF_SIZE - sizeof(buffer_t))/sizeof(vid_t); // 63
         LEVEL_COUNT = log2(MAX_VBUF_SIZE/MIN_VBUF_SIZE) + 1; // 5
-    }
 
-    CLWB = get_option_int("--clwb", 0); // clwb = 1 for clwb proactively
-    PERSIST = get_option_int("--persist", 1); // persist = 1 for saving XPGraph information, used for recovery
-    RECYPATH = get_option_string("--recovery", "/mnt/pmem1/zorax/Recovery/");  // Path of recovery data.
+        VERT_INPM = 0;
+        SNAP_INPM = 0;
+        TEDGE_INPM = 0;
+        LEBUF_INPM = 0;
+
+        PERSIST = 0;
+    }
 }
 
 void prinf_config(){
