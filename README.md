@@ -67,6 +67,12 @@ $ g++ text2bin.cpp -o text2bin
 $ ./text2bin [path_to_txt/data.txt] [path_to_binary/data.bin]
 ```
 
+Additionally, we provide a script to randomly shuffle the input data in text format.
+
+```bash
+$ python preprocess/shuffle.py -i [path_to_txt/data.txt] -o [path_to_txt/data_shuffle.txt] -v [nverts]
+```
+
 **Input Graph Data:** Edge list in binary format. 
 
 **Example1: LiveJournal (small graph for function test):**
