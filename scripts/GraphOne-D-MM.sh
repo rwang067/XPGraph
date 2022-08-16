@@ -50,6 +50,17 @@ done
 echo >> god_update.csv
 
 cur_time=$(date "+%Y-%m-%d %H:%M:%S")
+echo $cur_time "Graph ingest time of GraphOne-D, with command: ${god_path}build/graphone64 -i ${dataset_path}Yahoo/bin64 -v 61578415 -j 0 -s 1 -d 1 -t 16" >> god_update.csv
+echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> god_update.csv
+for(( times = 0; times < 10; times++))
+do
+    echo "times = " $times " from echo"
+    sleep 10s
+    ${god_path}build/graphone64 -i ${dataset_path}Yahoo/bin64 -v 1413511394 -j 0 -s 1 -d 1 -t 16
+done
+echo >> god_update.csv
+
+cur_time=$(date "+%Y-%m-%d %H:%M:%S")
 echo $cur_time "Graph ingest time of GraphOne-D, with command: ${god_path}build/graphone32 -i ${dataset_path}Kron29/bin -v 61578415 -j 0 -s 1 -d 1 -t 16" >> god_update.csv
 echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> god_update.csv
 for(( times = 0; times < 10; times++))
@@ -68,17 +79,6 @@ do
     echo "times = " $times " from echo"
     sleep 10s
     ${god_path}build/graphone32 -i ${dataset_path}Kron30/bin -v 1073741823 -j 0 -s 1 -d 1 -t 16
-done
-echo >> god_update.csv
-
-cur_time=$(date "+%Y-%m-%d %H:%M:%S")
-echo $cur_time "Graph ingest time of GraphOne-D, with command: ${god_path}build/graphone64 -i ${dataset_path}Yahoo/bin64 -v 61578415 -j 0 -s 1 -d 1 -t 16" >> god_update.csv
-echo "make_graph_time(s),VIRT(GB),RSS(GB),vunit_size(GB),snap_size(GB),global_range_size(GB),global_range_in_size(GB),elog_size(GB),adjlist_size(GB),local_buf_size(GB)" >> god_update.csv
-for(( times = 0; times < 10; times++))
-do
-    echo "times = " $times " from echo"
-    sleep 10s
-    ${god_path}build/graphone64 -i ${dataset_path}Yahoo/bin64 -v 1413511394 -j 0 -s 1 -d 1 -t 16
 done
 echo >> god_update.csv
 
