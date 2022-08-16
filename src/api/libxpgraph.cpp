@@ -103,7 +103,7 @@ bool XPGraph::del_edge(vid_t src, vid_t dst) {
 void XPGraph::ingest_edges_from_files(std::string idirname, index_t count) {
     m.start_time("2-ingest_edges_from_files");  
     std::string odirname = "";
-    if(LEBUF_INPM) odirname = NVMPATH0;
+    if(LEBUF_INPM && !DRAMONLY) odirname = NVMPATH0;
     graph_ingestion(levelgraph, idirname, odirname, count, m);
     m.stop_time("2-ingest_edges_from_files");  
 }
@@ -111,7 +111,7 @@ void XPGraph::ingest_edges_from_files(std::string idirname, index_t count) {
 void XPGraph::log_edges_from_files(std::string idirname, index_t count) {
     m.start_time("2-log_edges_from_files");  
     std::string odirname = "";
-    if(LEBUF_INPM) odirname = NVMPATH0;
+    if(LEBUF_INPM && !DRAMONLY) odirname = NVMPATH0;
     graph_logging(levelgraph, idirname, odirname, count, m);
     m.stop_time("2-log_edges_from_files");  
 }
@@ -119,7 +119,7 @@ void XPGraph::log_edges_from_files(std::string idirname, index_t count) {
 void XPGraph::archive_edges_from_files(std::string idirname, int residue, index_t count) {
     m.start_time("2-archive_edges_from_files");  
     std::string odirname = "";
-    if(LEBUF_INPM) odirname = NVMPATH0;
+    if(LEBUF_INPM && !DRAMONLY) odirname = NVMPATH0;
     graph_archiving(levelgraph, idirname, odirname, count, residue, m);
     m.stop_time("2-archive_edges_from_files");  
 }
