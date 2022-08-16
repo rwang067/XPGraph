@@ -67,6 +67,12 @@ $ g++ text2bin.cpp -o text2bin
 $ ./text2bin [path_to_txt/data.txt] [path_to_binary/data.bin]
 ```
 
+If the input data is too large to convert, you may use `split` command to split into smaller multiple text file.
+
+```bash
+split -[splitline] [path_to_txt/data.txt]
+```
+
 Additionally, we provide a script to randomly shuffle the input data in text format.
 
 ```bash
