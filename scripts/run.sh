@@ -16,7 +16,7 @@ echo "LD_LIBRARY_PATH = " $LD_LIBRARY_PATH
 # Make GraphOne-D and GraphOne-P
 # see baselines/README.md
 
-# config the path below according to your host
+# !! Config the path below according to your host !!
 dataset_path="/mnt/nvme1/wr/dataset/"   # path to the dataset directory
 pmem0="/pmem/zorax/GraphDB0/"            # path to the graph database information stored in PMEM0
 pmem1="/mnt/pmem1/zorax/GraphDB1/"         # path to the graph database information stored in PMEM1
@@ -74,20 +74,20 @@ echo $cur_time "Test XPGraph-D performance in DRAM-Only system, including Figure
 echo "[ Expected completion time: around 0.9 hours ]" >> scripts/progress.txt
 bash scripts/XPGraph-D-DO.sh ${dataset_path}
 
-# 
-# !! Switch Optane to Memory Mode !! 
-# !! Refer to scripts/nvdimm.md !!
-# 
+# # 
+# # !! Switch Optane to Memory Mode !! 
+# # !! Refer to scripts/nvdimm.md !!
+# # 
 
-# Figure 12
-cur_time=$(date "+%Y-%m-%d %H:%M:%S")
-echo $cur_time "Test GraphOne-D performance under Memory Mode of Optane, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
-echo "[ Expected completion time: around 6.6 hours ]" >> scripts/progress.txt
-bash scripts/GraphOne-D-MM.sh ${god_path} ${dataset_path}
-sleep 10s
+# # Figure 12
+# cur_time=$(date "+%Y-%m-%d %H:%M:%S")
+# echo $cur_time "Test GraphOne-D performance under Memory Mode of Optane, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
+# echo "[ Expected completion time: around 6.6 hours ]" >> scripts/progress.txt
+# bash scripts/GraphOne-D-MM.sh ${god_path} ${dataset_path}
+# sleep 10s
 
-# Figure 12
-cur_time=$(date "+%Y-%m-%d %H:%M:%S")
-echo $cur_time "Test XPGraph-D performance under Memory Mode of Optane, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
-echo "[ Expected completion time: around 4.0 hours ]" >> scripts/progress.txt
-bash scripts/XPGraph-D-MM.sh ${dataset_path}
+# # Figure 12
+# cur_time=$(date "+%Y-%m-%d %H:%M:%S")
+# echo $cur_time "Test XPGraph-D performance under Memory Mode of Optane, including Figure 12 (Graph ingest time cost for volatile systems)..." >> scripts/progress.txt
+# echo "[ Expected completion time: around 4.0 hours ]" >> scripts/progress.txt
+# bash scripts/XPGraph-D-MM.sh ${dataset_path}
