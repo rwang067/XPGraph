@@ -20,6 +20,19 @@ typedef uint32_t degree_t; //vertex degree
 typedef uint32_t sid_t; //snap id
 typedef uint16_t rid_t; //range id
 typedef uint8_t tid_t; //thread id
+typedef uint8_t sktid_t; //socket id
+
+#ifdef B64
+#define DEL_MASK   0x8000000000000000
+#define SID_MASK   0x7FFFFFFFFFFFFFFF
+#else
+#define DEL_MASK   0x80000000
+#define SID_MASK   0x7FFFFFFF
+#endif
+#define DEL_SID(sid) (sid | DEL_MASK)
+#define IS_DEL(sid) (sid & DEL_MASK)
+#define UNDEL_SID(sid) (sid & SID_MASK)
+#define TO_SID(sid) (sid & SID_MASK)
 
 class edge_t;
 class buffer_t;

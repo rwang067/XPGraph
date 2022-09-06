@@ -154,6 +154,7 @@ void edge_shard_t::count_range_edges(vid_t bit_shift, index_t** ecount_out, inde
     rid_t rid;
     edge_t* edges = elog->data;
     index_t index;
+    // bool rewind1, rewind2;
 
     if(NUMA_OPT == 2){
         #pragma omp for schedule (static) nowait // nowait 子句用于消除隐式的 barrier
@@ -161,15 +162,23 @@ void edge_shard_t::count_range_edges(vid_t bit_shift, index_t** ecount_out, inde
             index = eid & ELOG_MASK;
             src = edges[index].src;
             dst = edges[index].dst;
+
+            // rewind1 = !((eid >> ELOG_SHIFT) & 0x1);
+            // rewind2 = IS_DEL(dst);
+            // while (rewind1 != rewind2) {
+            //     usleep(10);
+            //     rewind2 = IS_DEL(dst);
+            // }
+            
             if(ecount_out){
                 sid = GET_SOCKETID(src);
-                rid = (src >> bit_shift);
+                rid = (TO_SID(src) >> bit_shift);
                 // assert(rid < RANGE_COUNT);
                 ecount_out[sid][rid] += 1;
             }
             if(ecount_in){
                 sid = GET_SOCKETID(dst);
-                rid = (dst >> bit_shift);
+                rid = (TO_SID(dst) >> bit_shift);
                 // assert(rid < RANGE_COUNT);
                 ecount_in[sid][rid] += 1;
             }
@@ -181,14 +190,22 @@ void edge_shard_t::count_range_edges(vid_t bit_shift, index_t** ecount_out, inde
             index = eid & ELOG_MASK;
             src = edges[index].src;
             dst = edges[index].dst;
+            
+            // rewind1 = !((eid >> ELOG_SHIFT) & 0x1);
+            // rewind2 = IS_DEL(dst);
+            // while (rewind1 != rewind2) {
+            //     usleep(10);
+            //     rewind2 = IS_DEL(dst);
+            // }
+
             if(ecount_out){
-                rid = (src >> bit_shift);
+                rid = (TO_SID(src) >> bit_shift);
                 // assert(rid < RANGE_COUNT);
                 ecount_out[sid][rid] += 1;
             }
             if(ecount_in){
-                rid = (dst >> bit_shift);
-                // assert(rid < RANGE_COUNT);
+                rid = (TO_SID(dst) >> bit_shift);
+                // assert(rid < RANGE_COU NT);
                 ecount_in[sid][rid] += 1;
             }
         }
@@ -274,7 +291,7 @@ void edge_shard_t::store_to_global_range(vid_t bit_shift, index_t** ecount_out, 
             dst = edges[index].dst;
             if(ecount_out){
                 sid = GET_SOCKETID(src);
-                rid = (src >> bit_shift);
+                rid = (TO_SID(src) >> bit_shift);
                 edge = global_range_out[rid].edges[sid] + ecount_out[sid][rid]; 
                 ecount_out[sid][rid] += 1;
                 edge->src = src;
@@ -283,12 +300,17 @@ void edge_shard_t::store_to_global_range(vid_t bit_shift, index_t** ecount_out, 
             }
             if(ecount_in){
                 sid = GET_SOCKETID(dst);
-                rid = (dst >> bit_shift);
+                rid = (TO_SID(dst) >> bit_shift);
                 edge = global_range_in[rid].edges[sid] + ecount_in[sid][rid]; 
                 ecount_in[sid][rid] += 1;
-                edge->src = dst;
-                edge->dst = src;
-                // cout << edge->src << "->" << edge->dst << endl;
+                if (!IS_DEL(src)) {
+                    edge->src = dst;
+                    edge->dst = src;
+                } else {
+                    edge->src = DEL_SID(dst);
+                    edge->dst = UNDEL_SID(src);
+                }
+                // cout << edge->src ·<< "->" << edge->dst << endl;
             }
         }
     } else {
@@ -299,18 +321,23 @@ void edge_shard_t::store_to_global_range(vid_t bit_shift, index_t** ecount_out, 
             src = edges[index].src;
             dst = edges[index].dst;
             if(ecount_out){
-                rid = (src >> bit_shift);
+                rid = (TO_SID(src) >> bit_shift);
                 edge = global_range_out[rid].edges[sid] + ecount_out[sid][rid]; 
                 ecount_out[sid][rid] += 1;
                 edge->src = src;
                 edge->dst = dst;
             }
             if(ecount_in){
-                rid = (dst >> bit_shift);
+                rid = (TO_SID(dst) >> bit_shift);
                 edge = global_range_in[rid].edges[sid] + ecount_in[sid][rid]; 
                 ecount_in[sid][rid] += 1;
-                edge->src = dst;
-                edge->dst = src;
+                if (!IS_DEL(src)) {
+                    edge->src = dst;
+                    edge->dst = src;
+                } else {
+                    edge->src = DEL_SID(dst);
+                    edge->dst = UNDEL_SID(src);
+                }
             }
         }
     }

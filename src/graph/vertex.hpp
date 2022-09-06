@@ -3,10 +3,59 @@
 #include "graph/blocks.hpp"
 
 /** -------------------------------------------------------------- **/
+class nebrcount_t {
+public:
+    degree_t    add_count;
+    degree_t    del_count;
+};
+
+#ifdef DEL
+#define MAX_DEL_DEGREE UINT16_MAX
+class sdegree_t {
+ public:
+    degree_t add_count;
+    uint16_t del_count;
+public:
+    inline sdegree_t(degree_t degree = 0) {
+        add_count = 0;
+        del_count = 0;
+    }
+    inline bool operator != (const sdegree_t& sdegree) {
+        return ((add_count != sdegree.add_count) || (del_count != sdegree.del_count));
+    }
+};
+#else 
+typedef degree_t sdegree_t;
+#endif
+
+inline degree_t get_total(sdegree_t sdegree) {
+#ifdef DEL
+	return sdegree.add_count + sdegree.del_count;
+#else
+	return sdegree;
+#endif
+}
+
+inline degree_t get_actual(sdegree_t sdegree) {
+#ifdef DEL
+	return sdegree.add_count - sdegree.del_count;
+#else
+	return sdegree;
+#endif
+}
+
+inline degree_t get_delcount(sdegree_t sdegree) {
+#ifdef DEL
+	return sdegree.del_count;
+#else
+	return 0;
+#endif
+}
+
 class  snap_t {
 public:
     snap_t*     prev;//prev snapshot of this vid 
-    degree_t  degree;
+    sdegree_t  degree;
     sid_t  id;
     snap_t(){ prev = 0; degree = 0; id = 0;}
 };
@@ -50,17 +99,24 @@ public:
 
     inline degree_t get_degree(){ 
         if(!vsnap) return 0;
-        return vsnap->degree;
+        return get_total(vsnap->degree);
     }
 
     inline degree_t get_degree(sid_t snap_id){ 
         if(!vsnap) return 0;
-        if(snap_id >= vsnap->id) return vsnap->degree;
+        if(snap_id >= vsnap->id) return get_total(vsnap->degree);
         snap_t* snap = vsnap->prev;
         while (snap && snap_id < snap->id) {
             snap = snap->prev;
         }
-        return snap->degree;
+        return get_total(vsnap->degree);
+    }
+
+    inline void compress_degree() {
+    #ifdef DEL
+        vsnap->degree.add_count -= vsnap->degree.del_count;
+        vsnap->degree.del_count = 0;
+    #endif
     }
 
     inline buffer_t* get_vbuf(){ return vbuf;}

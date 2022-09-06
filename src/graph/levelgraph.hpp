@@ -118,6 +118,7 @@ public:
     degree_t query_nebrs_flushed(vid_t* neighbors, vid_t vid, bool is_in_graph);
     bool compact_adjlists(vid_t vid, bool is_in_graph);
     bool compact_all_adjlists();
+    void compress_all_graph();
     void print_edgeshard(){
         edge_shard->print_edgesum_per_thread();
     }
@@ -608,4 +609,12 @@ bool levelgraph_t::compact_all_adjlists(){
     out_graph->compact_all_vbuf_pblks();
     in_graph->compact_all_vbuf_pblks();
     return true;
+}
+
+void levelgraph_t::compress_all_graph() {
+    #pragma omp parallel num_threads (THD_COUNT) 
+    {
+        out_graph->compress();
+        in_graph->compress();
+    }
 }

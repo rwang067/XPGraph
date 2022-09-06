@@ -94,8 +94,8 @@ index_t XPGraph::buffer_edges(char* buf, size_t size, index_t count) {
 
 bool XPGraph::del_edge(vid_t src, vid_t dst) {
     edge_t edge;
-    edge.src = -src;
-    edge.dst = -dst;
+    edge.src = DEL_SID(src);
+    edge.dst = dst;
     levelgraph->batch_edge(edge);
     return true;
 }

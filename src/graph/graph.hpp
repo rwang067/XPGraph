@@ -59,7 +59,13 @@ public:
     
     void buffer_range_edges(edge_t* edges, index_t count, uint16_t snap_id1);
     void increment_degree(vid_t vid);
+    void decrement_degree(vid_t vid);
     void buffer_nebr(vid_t vid, vid_t nebr);
+    void delete_nebr(vid_t vid, vid_t nebr);
+    degree_t find_nebr(vid_t vid, vid_t nebr);
+    void compress();
+    void compress_nebrs(vid_t vid);
+
     buffer_t* update_vbuf(vertex_t* vert);
     pblock_t* update_last_block(vid_t vid);
     index_t comp_vbuf_size(degree_t max_count);
@@ -71,6 +77,7 @@ public:
 
     degree_t query_nebrs(vid_t vid);
     degree_t get_nebrs(vid_t vid, vid_t* neighbors);
+    degree_t get_nebrs(vid_t vid, vid_t* ptr, sdegree_t count);
     degree_t get_nebrs_from_vbuf(vid_t vid, vid_t* neighbors);
     degree_t get_nebrs_from_pblks(vid_t vid, vid_t* neighbors);
     degree_t compact_vbuf_pblks(vid_t vid);
@@ -86,13 +93,15 @@ void graph_t::buffer_range_edges(edge_t* edges, index_t count, uint16_t snap_id1
     // count temporary degree of each vertices in current range_edges
     for(index_t i = 0; i < count; ++i){
         src = edges[i].src;
-        increment_degree(src);
+        if (!IS_DEL(src)) increment_degree(TO_SID(src));
+        else decrement_degree(TO_SID(src));
     }
     // buffer edges one by one
     for(index_t i = 0; i < count; ++i){
         src = edges[i].src;
         dst = edges[i].dst;
-        buffer_nebr(src, dst);
+        if (!IS_DEL(src)) buffer_nebr(TO_SID(src), dst);
+        else delete_nebr(TO_SID(src), dst);
     }
 }
 
@@ -114,7 +123,37 @@ void graph_t::increment_degree(vid_t vid){
         }
 		vsnap = next_snap;
 	}
+#ifdef DEL
+    vsnap->degree.add_count++;
+#else
     vsnap->degree++;
+#endif
+}
+
+void graph_t::decrement_degree(vid_t vid){
+    vertex_t* vert = vertices[vid];
+    if(vert == 0){
+        vert = thd_mem->new_vertex();
+        set_vertex(vid, vert);
+    }
+    snap_t* vsnap = vert->get_snap();
+    if (vsnap == 0 || vsnap->id < snap_id) {
+		//allocate new snap blob 
+        snap_t* next_snap = vert->recycle_snap(snap_id);
+		if (next_snap == 0) {
+            next_snap = thd_mem->new_snap();
+            next_snap->id = snap_id;
+            if(vsnap){ next_snap->degree = vsnap->degree;}
+            vert->set_snap(next_snap);
+        }
+		vsnap = next_snap;
+	}
+#ifdef DEL
+    assert((vsnap->degree.del_count < MAX_DEL_DEGREE) && (vsnap->degree.del_count >= 0));
+	vsnap->degree.del_count++;
+#else
+	assert(0);
+#endif
 }
 
 /* -------------------------------------------------------------- */
@@ -151,6 +190,124 @@ void graph_t::buffer_nebr(vid_t vid, vid_t nebr){
     vbuf->add_nebr(nebr);
 }
 
+void graph_t::delete_nebr(vid_t vid, vid_t nebr) {
+    vertex_t* vert = vertices[vid];
+    degree_t location = find_nebr(vid, TO_SID(nebr));
+    // std::cout << "delete vid = " << vid << ",nebr = " << nebr << ",location = " << location << std::endl;
+    if (location != INVALID_DEGREE) {
+        nebr = DEL_SID(location);
+        buffer_t* vbuf = vert->vbuf;
+        if(vbuf == 0){
+            vbuf = update_vbuf(vert);
+            if(vbuf == 0){
+                // logstream(LOG_INFO) << "New vbuf fail for vertex: " << vid << ", " << vert->get_degree() << endl;
+                archive_nebr(vid, nebr);
+                return ;
+            }
+        } 
+        // vbuf->assert_valid();
+        if(vbuf->is_full()){
+            if(vbuf->is_max_vbuf()){ // || !(vbuf = update_vbuf(vert))){ // flush to pmem
+                archive_vbuf(vid);
+            } else {
+                buffer_t* new_vbuf = update_vbuf(vert);
+                if(new_vbuf == 0) {
+                    logstream(LOG_DEBUG) << "Increment vbuf fail for vertex: " << vid << ", " << vert->get_degree() << endl;
+                    archive_and_free_vbuf(vid);
+                    pblock_t* cur_blk = vert->get_last_block();
+                    cur_blk->assert_valid();
+                    cur_blk->add_nebr(nebr);
+                    if(CLWB) clwb_pblk(cur_blk);
+                    return;
+                }
+                vbuf = new_vbuf;
+            }
+        }
+        vbuf->assert_valid();
+        vbuf->add_nebr(nebr);
+    } else {
+#ifdef DEL
+        snap_t* vsnap = vert->get_snap();
+        vsnap->degree.del_count--;
+#else
+        assert(0);
+#endif
+    }
+}
+
+degree_t graph_t::find_nebr(vid_t vid, vid_t nebr) {    
+    degree_t degree = get_degree(vid);
+    if(degree == 0) return INVALID_DEGREE;
+
+    vid_t* neighbors = new vid_t[degree];
+    degree_t count = get_nebrs(vid, neighbors);
+
+    degree_t ret_degree = INVALID_DEGREE;
+    for(index_t i = 0; i < count; ++i) {
+        if(neighbors[i] == nebr) {
+            ret_degree = i;
+            break;
+        }
+    }
+    delete [] neighbors;
+    return ret_degree;
+}
+
+void graph_t::compress() {
+    #pragma omp for schedule (dynamic, 256) nowait
+    for(vid_t vid = 0; vid < nverts; ++vid) {
+        compress_nebrs(vid);
+    }
+}
+
+void graph_t::compress_nebrs(vid_t vid) {
+    vertex_t* vert = vertices[vid];
+    if (vert == 0) return;
+    snap_t* vsnap = vert->get_snap();
+    if (vsnap == 0) return;
+
+    sdegree_t sdegree = vsnap->degree;
+	degree_t nebr_count = get_actual(sdegree);
+    degree_t del_count = get_delcount(sdegree);
+
+    if (del_count == 0) return;
+
+    // copy valid data from old pblock to new adjlist
+    vid_t* ptr = new vid_t[nebr_count];
+    degree_t ret = get_nebrs(vid, ptr, sdegree);
+    assert(ret == nebr_count);
+
+    // replace old pblock for vertex
+    uint8_t socket_id = 0;
+    if(NUMA_OPT == 2) socket_id = GET_SOCKETID(vid);
+    else if(NUMA_OPT == 1) socket_id = (uint8_t)is_in_graph; // 0 for out-graph, 1 for in-graph
+    degree_t sum_deg = nebr_count;
+    degree_t index = 0;
+
+    vert->set_1st_block(0);
+    vert->set_last_block(0);
+
+    while(sum_deg > 0) {
+        index_t size = comp_pblk_size(sum_deg);
+        pblock_t* cur_blk = thd_mem->alloc_pblk(size, socket_id);
+        degree_t max_nebrcount = cur_blk->get_max_nebrcount();
+        degree_t rel_nebrcount = std::min(sum_deg, max_nebrcount);
+        cur_blk->set_nebrcount(rel_nebrcount);
+        vid_t* vlist = cur_blk->get_adjlist();
+        for(degree_t i = 0; i < rel_nebrcount; ++i) vlist[i] = ptr[index++];        
+        vert->update_last_block(cur_blk);
+        sum_deg -= rel_nebrcount;
+    }
+    vert->compress_degree();
+
+    // free vertex buffer on dram
+    buffer_t* vbuf = vert->get_vbuf();
+    if(vbuf) thd_mem->free_vbuf(vbuf, vbuf->get_size());
+    vert->set_vbuf(0);
+
+    // todo: free old pblock chain
+}
+
 index_t graph_t::comp_vbuf_size(degree_t max_count){
     if(!LEVELED_BUF) return MAX_VBUF_SIZE;  // set fixed buffer size
     // compute the propriate buffer size by vertex degree
@@ -182,12 +339,15 @@ index_t graph_t::comp_pblk_size(degree_t max_count){
 
 buffer_t* graph_t::update_vbuf(vertex_t* vert){
     assert(vert);
-    snap_t* vsnap = vert->get_snap();
-    assert(vsnap);
+    // snap_t* vsnap = vert->get_snap();
+    // assert(vsnap);
     // degree_t deg = vsnap->degree;
     // degree_t max_count = deg;
     // if(vsnap->prev) max_count = max_count - vsnap->prev->degree;
-    index_t size = comp_vbuf_size(vsnap->degree);
+    // index_t size = comp_vbuf_size(vsnap->degree);
+    degree_t max_count = vert->get_degree();
+    assert(max_count);
+    index_t size = comp_vbuf_size(max_count);
     buffer_t* vbuf = vert->vbuf;
     if(vbuf == 0){ // allocate dram space for vertex buffer
         if(!(vbuf = thd_mem->alloc_vbuf(size))) return 0; 
@@ -210,9 +370,9 @@ inline pblock_t* graph_t::update_last_block(vid_t vid){
     if(vert->vbuf) vbuf_count = vert->vbuf->get_nebrcount();
     snap_t* vsnap = vert->get_snap();
     assert(vsnap);
-    degree_t deg = vsnap->degree;
+    degree_t deg = get_total(vsnap->degree);
     degree_t max_count = deg;
-    if(vsnap->prev) max_count = max_count - vsnap->prev->degree + vbuf_count;
+    if(vsnap->prev) max_count = max_count - get_total(vsnap->prev->degree) + vbuf_count;
     index_t size = comp_pblk_size(max_count);
 
     uint8_t socket_id = 0;
@@ -318,6 +478,69 @@ degree_t graph_t::get_nebrs(vid_t vid, vid_t* neighbors){
     degree_t pcount = get_nebrs_from_pblks(vid, neighbors);
     degree_t dcount = get_nebrs_from_vbuf(vid, neighbors+pcount);
     return pcount + dcount;
+}
+
+degree_t graph_t::get_nebrs(vid_t vid, vid_t* ptr, sdegree_t count) {
+    vertex_t* vert = vertices[vid];
+    if (vert == 0) return 0;
+
+    degree_t del_count = get_delcount(count);
+    degree_t delta_degree = get_total(count);
+    degree_t total_count = 0;
+    
+    if (del_count == 0) {
+        total_count = get_nebrs(vid, ptr);
+        assert(total_count == delta_degree);
+    } else {
+        degree_t nebr_count = get_actual(count);
+        degree_t other_count = delta_degree - nebr_count;
+        degree_t* del_pos = (degree_t*)calloc(2*del_count, sizeof(degree_t));
+        vid_t* others = (vid_t*)calloc(other_count, sizeof(vid));
+
+        degree_t pos = 0;
+        degree_t idel = 0;
+        degree_t other_pos = 0;
+        bool is_del = false;
+
+        degree_t local_degree = get_degree(vid);
+        vid_t* local_adjlist = new vid_t[local_degree];
+        degree_t degree = get_nebrs(vid, local_adjlist);
+        assert(local_degree == degree);
+
+        for (vid_t i = 0; i < degree; ++i) {
+            is_del = IS_DEL(local_adjlist[i]);
+            if (is_del) {
+                pos = UNDEL_SID(local_adjlist[i]);
+                if (total_count < nebr_count){
+                    del_pos[idel++] = pos;
+                    del_pos[idel++] = total_count;
+                } else {
+                    if (pos < nebr_count) {
+                        del_pos[idel++] = pos;
+                    }
+                }
+            } 
+            if (total_count < nebr_count) { //normal case
+                ptr[total_count++] = local_adjlist[i];
+            } else { //space is full
+                others[other_pos++] = local_adjlist[i];
+                if (is_del && pos >= total_count) {
+                    others[pos-total_count] = local_adjlist[i];
+                }
+            }
+        }
+
+        assert(other_pos <= other_count);
+        assert(idel <= 2*del_count);
+        while (other_pos != 0 && idel !=0) {
+            if (IS_DEL(others[--other_pos])) continue;
+            pos = del_pos[--idel];
+            ptr[pos] = others[other_pos];    
+        }
+        free(del_pos);
+        free(others);
+    }
+    return total_count;
 }
 
 degree_t graph_t::get_nebrs_from_vbuf(vid_t vid, vid_t* neighbors){
