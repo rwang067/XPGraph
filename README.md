@@ -58,9 +58,16 @@ $ make main
 
 ### Dataset preparing
 
-XPGraph provides interface with edge list data in binary format from a file. For convenience, we provide a script to convert input data from text format to binary format. 
+XPGraph provides interfaces to ingest graph data from edge list files of binary format. Typically, the downloaded datasets are edge list files of text format. For convenience, we provide a script to convert the input data from text format to binary format. Furthermore, the edges of some datasets are 
+ordered by source vertices, such as Twitter, UKDomain and YahooWeb used in our evaluaton. For better performance testing, we also provide a script to randomly shuffle these ordered datasets. If a dataset is too large to convert, you can use the `split` command to split it into multiple smaller text files.
 
 ```bash
+## Split a large text file
+$ split -[splitline] [path_to_txt/data.txt]
+
+## Shuffle a ordered text file
+$ python preprocess/shuffle.py -i [path_to_txt/data.txt] -o [path_to_txt/data_shuffle.txt] -v [nverts]
+
 ## Change to binary format
 $ cd preprocess
 $ g++ text2bin.cpp -o text2bin
@@ -80,11 +87,12 @@ $ python preprocess/shuffle.py -i [path_to_txt/data.txt] -o [path_to_txt/data_sh
 ## Download and unzip
 $ mkdir Dataset && cd Dataset
 $ mkdir LiveJournal && cd LiveJournal
-$ mkdir txt && cd txt
 $ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
 $ gunzip soc-LiveJournal1.txt.gz
 
-$ cd .. && mkdir bin
+## Shuffle and change to binary format
+$ mkdir txt && mkdir bin
+$ python [preprocess_path]/shuffle.py -i soc-LiveJournal1.txt -o txt/soc-LiveJournal1_shuffle.txt -v 4847571
 $ [preprocess_path]/text2bin txt/soc-LiveJournal1.txt bin/soc-LiveJournal1.bin
 ```
 
