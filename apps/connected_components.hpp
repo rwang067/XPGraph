@@ -1,13 +1,13 @@
 #pragma once
 #include <omp.h>
 #include <random>
+#include <algorithm>
 #include <utility>
 #include <vector>
 #include <unordered_map>
-#include <algorithm>
 #include <cinttypes>
 #include <functional>
-#include "graph/levelgraph.hpp"
+#include <libxpgraph.h>
 
 bool compare_and_swap(vid_t &x, vid_t &old_val, vid_t &new_val) {
     return __sync_bool_compare_and_swap(&x, old_val, new_val);
@@ -81,14 +81,10 @@ vid_t SampleFrequentElement(vid_t* comp, vid_t v_count, index_t num_samples = 10
   return most_frequent->first;
 }
 
-double test_connected_components(levelgraph_t* levelgraph, metrics &m, index_t neighbor_rounds = 2) {
+vid_t test_connected_components(XPGraph* xpgraph, index_t neighbor_rounds = 2) {
     std::cout << "test_connected_components..." << std::endl;
-    vid_t v_count = levelgraph->get_vcount();
-    graph_t* out_graph = levelgraph->get_out_graph();
-    graph_t* in_graph = levelgraph->get_in_graph();
+    vid_t v_count = xpgraph->get_vcount();
     vid_t* comp = (vid_t*)calloc(sizeof(vid_t), v_count);
-    
-    double start = mywtime();
 
     // Initialize each node to a single-node self-pointing tree
     #pragma omp parallel for
@@ -98,66 +94,63 @@ double test_connected_components(levelgraph_t* levelgraph, metrics &m, index_t n
 
     // Process a sparse sampled subgraph first for approximating components.
     // Sample by processing a fixed number of neighbors for each node (see paper)
-    
     for (index_t r = 0; r < neighbor_rounds; ++r) {
-        #pragma omp parallel for schedule(dynamic,16384)
-        for (vid_t u = 0; u < v_count; u++) {
-            degree_t nebr_count, local_degree;
-            vid_t* local_adjlist;
-            nebr_count = out_graph->get_degree(u);
-            if (nebr_count == 0) continue;
-            local_adjlist = new vid_t[nebr_count];
-            local_degree  = out_graph->get_nebrs(u, local_adjlist);
-            assert(nebr_count == local_degree);
-            for (vid_t v = r; v < local_degree; v++) {
-                Link(u, local_adjlist[v], comp);
-                break;
+        #pragma omp parallel 
+        {
+            #pragma omp for nowait
+            for (vid_t u = 0; u < v_count; u++) {
+                degree_t nebr_count, local_degree;
+                vid_t* local_adjlist;
+                nebr_count = xpgraph->get_out_degree(u);
+                if (nebr_count == 0) continue;
+                local_adjlist = new vid_t[nebr_count];
+                local_degree  = xpgraph->get_out_nebrs(u, local_adjlist);
+                assert(nebr_count == local_degree);
+                for (vid_t v = r; v < local_degree; v++) {
+                    Link(u, local_adjlist[v], comp);
+                    break;
+                }
+                delete [] local_adjlist;
             }
-            delete [] local_adjlist;
         }
-        Compress(v_count, comp);
     }
+    Compress(v_count, comp);
+    
 
     vid_t c = SampleFrequentElement(comp, v_count);
 
-    #pragma omp parallel for schedule(dynamic, 16384)
-    for (vid_t u = 0; u < v_count; u++) {
-        degree_t nebr_count, local_degree;
-        vid_t* local_adjlist;
-        if (comp[u] == c) continue;
-        nebr_count = out_graph->get_degree(u);
-        if (nebr_count != 0) {
+    #pragma omp parallel 
+    {
+        #pragma omp for nowait
+        for (vid_t u = 0; u < v_count; u++) {
+            degree_t nebr_count, local_degree;
+            vid_t* local_adjlist;
+            if (comp[u] == c) continue;
+            nebr_count = xpgraph->get_out_degree(u);
+            if (nebr_count != 0) {
+                local_adjlist = new vid_t[nebr_count];
+                local_degree  = xpgraph->get_out_nebrs(u, local_adjlist);
+                assert(nebr_count == local_degree);
+                for (vid_t v = neighbor_rounds; v < local_degree; v++) {
+                    Link(u, local_adjlist[v], comp);
+                }
+                delete [] local_adjlist;
+            }
+            // To support directed graphs, process reverse graph completely
+            nebr_count = xpgraph->get_in_degree(u);
+            if (nebr_count == 0) continue;
             local_adjlist = new vid_t[nebr_count];
-            local_degree  = out_graph->get_nebrs(u, local_adjlist);
+            local_degree  = xpgraph->get_in_nebrs(u, local_adjlist);
             assert(nebr_count == local_degree);
-            for (vid_t v = neighbor_rounds; v < local_degree; v++) {
+            for (vid_t v = 0; v < local_degree; v++) {
                 Link(u, local_adjlist[v], comp);
             }
             delete [] local_adjlist;
         }
-        // To support directed graphs, process reverse graph completely
-        nebr_count = in_graph->get_degree(u);
-        if (nebr_count == 0) continue;
-        local_adjlist = new vid_t[nebr_count];
-        local_degree  = in_graph->get_nebrs(u, local_adjlist);
-        assert(nebr_count == local_degree);
-        for (vid_t v = 0; v < local_degree; v++) {
-            Link(u, local_adjlist[v], comp);
-        }
-        delete [] local_adjlist;
-    }                                                                                                              
+    }
     // Finally, 'compress' for final convergence
     Compress(v_count, comp);
 
-    double end = mywtime();
-    std::string statistic_filename = "xpgraph_query.csv";
-    std::ofstream ofs;
-    ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
-    ofs << "CC Time = " << end - start << std::endl;
-    ofs << std::endl;
-    ofs.close();
-
-    cout << endl;
     std::unordered_map<vid_t, vid_t> count;
     for (vid_t comp_i = 0; comp_i < v_count; comp_i++)
         count[comp[comp_i]] += 1;
@@ -167,23 +160,19 @@ double test_connected_components(levelgraph_t* levelgraph, metrics &m, index_t n
     for (auto kvp : count) count_vector.push_back(kvp);
     std::vector<std::pair<vid_t, vid_t>> top_k = TopK(count_vector, k);
     k = std::min(k, static_cast<int>(top_k.size()));
-    cout << k << " biggest clusters" << endl;
+    std::cout << k << " biggest clusters" << std::endl;
     for (auto kvp : top_k)
-        cout << kvp.second << ":" << kvp.first << endl;
-    cout << "There are " << count.size() << " components" << endl;
+        std::cout << kvp.second << ":" << kvp.first << std::endl;
+    std::cout << "There are " << count.size() << " components" << std::endl;
 
     free(comp);
-    return end - start;
+    return count.size();
 }
 
-double test_connected_components_numa(levelgraph_t* levelgraph, metrics &m, index_t neighbor_rounds = 2) {
+vid_t test_connected_components_numa(XPGraph* xpgraph, index_t neighbor_rounds = 2) {
     std::cout << "test_connected_components_numa..." << std::endl;
-    vid_t v_count = levelgraph->get_vcount();
-    graph_t* out_graph = levelgraph->get_out_graph();
-    graph_t* in_graph = levelgraph->get_in_graph();
+    vid_t v_count = xpgraph->get_vcount();
     vid_t* comp = (vid_t*)calloc(sizeof(vid_t), v_count);
-    
-    double start = mywtime();
 
     // Initialize each node to a single-node self-pointing tree
     #pragma omp parallel for
@@ -193,37 +182,47 @@ double test_connected_components_numa(levelgraph_t* levelgraph, metrics &m, inde
 
     // Process a sparse sampled subgraph first for approximating components.
     // Sample by processing a fixed number of neighbors for each node (see paper)
-    tid_t ncores_per_socket = omp_get_max_threads() / NUM_SOCKETS / 2; //24
     for (index_t r = 0; r < neighbor_rounds; ++r) {
         #pragma omp parallel 
         {
             tid_t tid = omp_get_thread_num();
-            for(int id = 0; id < NUM_SOCKETS; ++id){ // query from numa id
-                // if(tid >= 0 && tid < 24 || (tid >= 48 && tid < 72)){ // socket0
-                // if(tid >= 24 && tid < 48 || (tid >= 72 && tid < 96)){ // socket1
-                if((tid >= ncores_per_socket*id && tid < ncores_per_socket*(id+1)) 
-                || (tid >= ncores_per_socket*NUM_SOCKETS + ncores_per_socket*id && tid < ncores_per_socket*NUM_SOCKETS + ncores_per_socket*(id+1))){
-                    bind_thread_to_socket(tid, id);
-
-                    #pragma omp for schedule(dynamic,16384) nowait
-                    for (vid_t u = id; u < v_count; u+=NUM_SOCKETS) {
-                        degree_t nebr_count, local_degree;
-                        vid_t* local_adjlist;
-                        nebr_count = out_graph->get_degree(u);
-                        if (nebr_count == 0) continue;
-                        local_adjlist = new vid_t[nebr_count];
-                        local_degree  = out_graph->get_nebrs(u, local_adjlist);
-                        assert(nebr_count == local_degree);
-                        for (vid_t v = r; v < local_degree; v++) {
-                            Link(u, local_adjlist[v], comp);
-                            break;
-                        }
-                        delete [] local_adjlist;
-                    }
+            // First process vertices in socket 0
+            xpgraph->bind_cpu(tid, 0);
+            #pragma omp for nowait
+            for (vid_t u = 0; u < v_count; u+=2) {
+                degree_t nebr_count, local_degree;
+                vid_t* local_adjlist;
+                nebr_count = xpgraph->get_out_degree(u);
+                if (nebr_count == 0) continue;
+                local_adjlist = new vid_t[nebr_count];
+                local_degree  = xpgraph->get_out_nebrs(u, local_adjlist);
+                assert(nebr_count == local_degree);
+                for (vid_t v = r; v < local_degree; v++) {
+                    Link(u, local_adjlist[v], comp);
+                    break;
                 }
+                delete [] local_adjlist;
+            }
+            // Then process vertices in socket 1
+            xpgraph->bind_cpu(tid, 1);
+            #pragma omp for nowait
+            for (vid_t u = 1; u < v_count; u+=2) {
+                degree_t nebr_count, local_degree;
+                vid_t* local_adjlist;
+                nebr_count = xpgraph->get_out_degree(u);
+                if (nebr_count == 0) continue;
+                local_adjlist = new vid_t[nebr_count];
+                local_degree  = xpgraph->get_out_nebrs(u, local_adjlist);
+                assert(nebr_count == local_degree);
+                for (vid_t v = r; v < local_degree; v++) {
+                    Link(u, local_adjlist[v], comp);
+                    break;
+                }
+                delete [] local_adjlist;
             }
         }
         Compress(v_count, comp);
+        xpgraph->cancel_bind_cpu();
     }
 
     vid_t c = SampleFrequentElement(comp, v_count);
@@ -231,70 +230,84 @@ double test_connected_components_numa(levelgraph_t* levelgraph, metrics &m, inde
     #pragma omp parallel 
     {
         tid_t tid = omp_get_thread_num();
-        for(int id = 0; id < NUM_SOCKETS; ++id){ // query from numa id
-            // if(tid >= 0 && tid < 24 || (tid >= 48 && tid < 72)){ // socket0
-            // if(tid >= 24 && tid < 48 || (tid >= 72 && tid < 96)){ // socket1
-            if((tid >= ncores_per_socket*id && tid < ncores_per_socket*(id+1)) 
-            || (tid >= ncores_per_socket*NUM_SOCKETS + ncores_per_socket*id && tid < ncores_per_socket*NUM_SOCKETS + ncores_per_socket*(id+1))){
-                bind_thread_to_socket(tid, id);
-
-                #pragma omp for schedule(dynamic, 16384) nowait
-                for (vid_t u = id; u < v_count; u+=NUM_SOCKETS) {
-                    degree_t nebr_count, local_degree;
-                    vid_t* local_adjlist;
-                    if (comp[u] == c) continue;
-                    nebr_count = out_graph->get_degree(u);
-                    if (nebr_count != 0) {
-                        local_adjlist = new vid_t[nebr_count];
-                        local_degree  = out_graph->get_nebrs(u, local_adjlist);
-                        assert(nebr_count == local_degree);
-                        for (vid_t v = neighbor_rounds; v < local_degree; v++) {
-                            Link(u, local_adjlist[v], comp);
-                        }
-                        delete [] local_adjlist;
-                    }
-                    // To support directed graphs, process reverse graph completely
-                    nebr_count = in_graph->get_degree(u);
-                    if (nebr_count == 0) continue;
-                    local_adjlist = new vid_t[nebr_count];
-                    local_degree  = in_graph->get_nebrs(u, local_adjlist);
-                    assert(nebr_count == local_degree);
-                    for (vid_t v = 0; v < local_degree; v++) {
-                        Link(u, local_adjlist[v], comp);
-                    }
-                    delete [] local_adjlist;
+        // First process vertices in socket 0
+        xpgraph->bind_cpu(tid, 0);
+        #pragma omp for nowait
+        for (vid_t u = 0; u < v_count; u+=2) {
+            degree_t nebr_count, local_degree;
+            vid_t* local_adjlist;
+            if (comp[u] == c) continue;
+            nebr_count = xpgraph->get_out_degree(u);
+            if (nebr_count != 0) {
+                local_adjlist = new vid_t[nebr_count];
+                local_degree  = xpgraph->get_out_nebrs(u, local_adjlist);
+                assert(nebr_count == local_degree);
+                for (vid_t v = neighbor_rounds; v < local_degree; v++) {
+                    Link(u, local_adjlist[v], comp);
                 }
+                delete [] local_adjlist;
             }
+            // To support directed graphs, process reverse graph completely
+            nebr_count = xpgraph->get_in_degree(u);
+            if (nebr_count == 0) continue;
+            local_adjlist = new vid_t[nebr_count];
+            local_degree  = xpgraph->get_in_nebrs(u, local_adjlist);
+            assert(nebr_count == local_degree);
+            for (vid_t v = 0; v < local_degree; v++) {
+                Link(u, local_adjlist[v], comp);
+            }
+            delete [] local_adjlist;
         }
+        
+        // Then process vertices in socket 1
+        xpgraph->bind_cpu(tid, 1);
+        #pragma omp for nowait
+        for (vid_t u = 1; u < v_count; u+=2) {
+            degree_t nebr_count, local_degree;
+            vid_t* local_adjlist;
+            if (comp[u] == c) continue;
+            nebr_count = xpgraph->get_out_degree(u);
+            if (nebr_count != 0) {
+                local_adjlist = new vid_t[nebr_count];
+                local_degree  = xpgraph->get_out_nebrs(u, local_adjlist);
+                assert(nebr_count == local_degree);
+                for (vid_t v = neighbor_rounds; v < local_degree; v++) {
+                    Link(u, local_adjlist[v], comp);
+                }
+                delete [] local_adjlist;
+            }
+            // To support directed graphs, process reverse graph completely
+            nebr_count = xpgraph->get_in_degree(u);
+            if (nebr_count == 0) continue;
+            local_adjlist = new vid_t[nebr_count];
+            local_degree  = xpgraph->get_in_nebrs(u, local_adjlist);
+            assert(nebr_count == local_degree);
+            for (vid_t v = 0; v < local_degree; v++) {
+                Link(u, local_adjlist[v], comp);
+            }
+            delete [] local_adjlist;
+        }
+        xpgraph->cancel_bind_cpu();
     }
 
     // Finally, 'compress' for final convergence
     Compress(v_count, comp);
 
-    double end = mywtime();
-    std::string statistic_filename = "xpgraph_query.csv";
-    std::ofstream ofs;
-    ofs.open(statistic_filename.c_str(), std::ofstream::out | std::ofstream::app );
-    ofs << "CC Time = " << end - start << std::endl;
-    ofs << std::endl;
-    ofs.close();
+    // std::unordered_map<vid_t, vid_t> count;
+    // for (vid_t comp_i = 0; comp_i < v_count; comp_i++)
+    //     count[comp[comp_i]] += 1;
+    // int k = 5;
+    // std::vector<std::pair<vid_t, vid_t>> count_vector;
+    // count_vector.reserve(count.size());
+    // for (auto kvp : count) count_vector.push_back(kvp);
+    // std::vector<std::pair<vid_t, vid_t>> top_k = TopK(count_vector, k);
+    // k = std::min(k, static_cast<int>(top_k.size()));
+    // std::cout << k << " biggest clusters" << std::endl;
+    // for (auto kvp : top_k)
+    //     std::cout << kvp.second << ":" << kvp.first << std::endl;
+    // std::cout << "There are " << count.size() << " components" << std::endl;
 
-    cout << endl;
-    std::unordered_map<vid_t, vid_t> count;
-    for (vid_t comp_i = 0; comp_i < v_count; comp_i++)
-        count[comp[comp_i]] += 1;
-    int k = 5;
-    std::vector<std::pair<vid_t, vid_t>> count_vector;
-    count_vector.reserve(count.size());
-    for (auto kvp : count) count_vector.push_back(kvp);
-    std::vector<std::pair<vid_t, vid_t>> top_k = TopK(count_vector, k);
-    k = std::min(k, static_cast<int>(top_k.size()));
-    cout << k << " biggest clusters" << endl;
-    for (auto kvp : top_k)
-        cout << kvp.second << ":" << kvp.first << endl;
-    cout << "There are " << count.size() << " components" << endl;
-
-    free(comp);
-    return end - start;
+    // free(comp);
+    // return count.size();
+    return 0;
 }
-

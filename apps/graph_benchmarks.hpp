@@ -9,7 +9,7 @@
 #include "two_hop_nebrs.hpp"
 #include "breadth_first_search.hpp"
 #include "pagerank.hpp"
-// #include "connected_components.hpp"
+#include "connected_components.hpp"
 
 #include <sys/time.h>
 #include <stdlib.h>
@@ -77,15 +77,15 @@ void test_graph_benchmarks(XPGraph* xpgraph){
             ofs << (end - start) << ",";
             std::cout << "test_1hop for " << query_count << " vertices, sum of their 1-hop neighbors = " << res << ", 1 Hop Time = " << end - start << std::endl;
         }
-        { // test_2hop_gone
-            index_t query_count = 1<<14;
-            vector<vid_t> query_verts = root_generator(xpgraph, query_count);
-            start = mywtime();
-            index_t res = test_2hop_gone(xpgraph, query_verts);
-            end = mywtime();
-            ofs << (end - start) << ",";
-            std::cout << "test_2hop_gone for " << query_count << " vertices, sum of their 2-hop neighbors = " << res << ", 2 Hop Time = " << end - start << std::endl;
-        }
+        // { // test_2hop_gone
+        //     index_t query_count = 1<<14;
+        //     vector<vid_t> query_verts = root_generator(xpgraph, query_count);
+        //     start = mywtime();
+        //     index_t res = test_2hop_gone(xpgraph, query_verts);
+        //     end = mywtime();
+        //     ofs << (end - start) << ",";
+        //     std::cout << "test_2hop_gone for " << query_count << " vertices, sum of their 2-hop neighbors = " << res << ", 2 Hop Time = " << end - start << std::endl;
+        // }
         { // test_bfs
             vid_t root_count = 3;
             start = mywtime();
@@ -101,6 +101,15 @@ void test_graph_benchmarks(XPGraph* xpgraph){
             end = mywtime();
             ofs << (end - start) << ",";
             std::cout << "test_pagerank_pull for " << num_iterations << " iterations, PageRank Time = " << end - start << std::endl;
+        }
+        { // test_connect_component
+            index_t neighbor_rounds = 2;
+            start = mywtime();
+            test_connected_components(xpgraph, neighbor_rounds);
+            end = mywtime();
+            ofs << (end - start) << ",";
+            std::cout << "test_connect_component with neighbor_rounds = " << neighbor_rounds << ", Connect Component Time = " << end - start << std::endl;
+
         }
     }
     #pragma endregion test_graph_benchmarks
@@ -130,15 +139,15 @@ void test_graph_benchmarks_numa(XPGraph* xpgraph){
             ofs << (end - start) << ",";
             std::cout << "test_1hop_numa for " << query_count << " vertices, sum of their 1-hop neighbors = " << res << ", 1 Hop Time = " << end - start << std::endl;
         }
-        { // test_2hop_gone_numa
-            index_t query_count = 1<<14;
-            vector< vector<vid_t> > query_verts = root_generator_numa(xpgraph, query_count);
-            start = mywtime();
-            index_t res = test_2hop_gone_numa(xpgraph, query_verts);
-            end = mywtime();
-            ofs << (end - start) << ",";
-            std::cout << "test_2hop_gone_numa for " << query_count << " vertices, sum of their 2-hop neighbors = " << res << ", 2 Hop Time = " << end - start << std::endl;
-        }
+        // { // test_2hop_gone_numa
+        //     index_t query_count = 1<<14;
+        //     vector< vector<vid_t> > query_verts = root_generator_numa(xpgraph, query_count);
+        //     start = mywtime();
+        //     index_t res = test_2hop_gone_numa(xpgraph, query_verts);
+        //     end = mywtime();
+        //     ofs << (end - start) << ",";
+        //     std::cout << "test_2hop_gone_numa for " << query_count << " vertices, sum of their 2-hop neighbors = " << res << ", 2 Hop Time = " << end - start << std::endl;
+        // }
         { // test_bfs_numa
             vid_t root_count = 3;
             start = mywtime();
@@ -154,6 +163,14 @@ void test_graph_benchmarks_numa(XPGraph* xpgraph){
             end = mywtime();
             ofs << (end - start) << ",";
             std::cout << "test_pagerank_pull for " << num_iterations << " iterations, PageRank Time = " << end - start << std::endl;
+        }
+        { // test_connect_component_numa
+            index_t neighbor_rounds = 2;
+            start = mywtime();
+            test_connected_components_numa(xpgraph, neighbor_rounds);
+            end = mywtime();
+            ofs << (end - start) << ",";
+            std::cout << "test_connect_component with neighbor_rounds = " << neighbor_rounds << ", Connect Component Time = " << end - start << std::endl;
         }
     }
     #pragma endregion test_graph_benchmarks_numa
