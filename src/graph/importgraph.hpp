@@ -148,8 +148,9 @@ void graph_ingestion(levelgraph_t *levelgraph, std::string idirname, std::string
     end = mywtime ();
 #ifdef DEL
     m.start_time("2.4  -compress_all_graph");
+    // levelgraph->compact_all_graph();
     levelgraph->compress_all_graph();
-    m.start_time("2.4  -compress_all_graph");
+    m.stop_time("2.4  -compress_all_graph");
 #endif
     cout << "Ingest graph time = " << end - start << endl;
     levelgraph->print_edgeshard();

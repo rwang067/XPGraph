@@ -56,6 +56,11 @@ public:
             clwbmore((char *)cur_blk, ((char *)cur_blk)+cur_blk_size-1);
         }
     }
+
+    inline void set_pblk_pools(mempool_t** new_pblk_pools) {
+        pblk_pools = new_pblk_pools;
+        thd_mem->set_pblk_pools(new_pblk_pools);
+    }
     
     void buffer_range_edges(edge_t* edges, index_t count, uint16_t snap_id1);
     void increment_degree(vid_t vid);
@@ -82,6 +87,8 @@ public:
     degree_t get_nebrs_from_pblks(vid_t vid, vid_t* neighbors);
     degree_t compact_vbuf_pblks(vid_t vid);
     bool compact_all_vbuf_pblks();
+    void compact();
+    void compact_nebrs(vid_t vid);
     
 }; // class graph_t
 
@@ -267,10 +274,9 @@ void graph_t::compress_nebrs(vid_t vid) {
     if (vsnap == 0) return;
 
     sdegree_t sdegree = vsnap->degree;
-	degree_t nebr_count = get_actual(sdegree);
     degree_t del_count = get_delcount(sdegree);
-
     if (del_count == 0) return;
+	degree_t nebr_count = get_actual(sdegree);    
 
     // copy valid data from old pblock to new adjlist
     vid_t* ptr = new vid_t[nebr_count];
@@ -304,8 +310,6 @@ void graph_t::compress_nebrs(vid_t vid) {
     buffer_t* vbuf = vert->get_vbuf();
     if(vbuf) thd_mem->free_vbuf(vbuf, vbuf->get_size());
     vert->set_vbuf(0);
-
-    // todo: free old pblock chain
 }
 
 index_t graph_t::comp_vbuf_size(degree_t max_count){
@@ -648,4 +652,54 @@ bool graph_t::compact_all_vbuf_pblks(){
         }
     }
     return true;
+}
+
+void graph_t::compact() {
+    #pragma omp for schedule (dynamic, 256) nowait
+    for(vid_t vid = 0; vid < nverts; ++vid) {
+        compact_nebrs(vid);
+    }
+}
+
+void graph_t::compact_nebrs(vid_t vid) {
+    vertex_t* vert = vertices[vid];
+    if (vert == 0) return;
+    snap_t* vsnap = vert->get_snap();
+    if (vsnap == 0) return;
+
+    sdegree_t sdegree = vsnap->degree;
+	degree_t nebr_count = get_actual(sdegree);    
+
+    // copy valid data from old pblock to new adjlist
+    vid_t* ptr = new vid_t[nebr_count];
+    degree_t ret = get_nebrs(vid, ptr, sdegree);
+    assert(ret == nebr_count);
+
+    // replace old pblock for vertex
+    uint8_t socket_id = 0;
+    if(NUMA_OPT == 2) socket_id = GET_SOCKETID(vid);
+    else if(NUMA_OPT == 1) socket_id = (uint8_t)is_in_graph; // 0 for out-graph, 1 for in-graph
+    degree_t sum_deg = nebr_count;
+    degree_t index = 0;
+
+    vert->set_1st_block(0);
+    vert->set_last_block(0);
+    
+    while(sum_deg > 0) {
+        index_t size = comp_pblk_size(sum_deg);
+        pblock_t* cur_blk = thd_mem->alloc_pblk(size, socket_id);
+        degree_t max_nebrcount = cur_blk->get_max_nebrcount();
+        degree_t rel_nebrcount = std::min(sum_deg, max_nebrcount);
+        cur_blk->set_nebrcount(rel_nebrcount);
+        vid_t* vlist = cur_blk->get_adjlist();
+        for(degree_t i = 0; i < rel_nebrcount; ++i) vlist[i] = ptr[index++];        
+        vert->update_last_block(cur_blk);
+        sum_deg -= rel_nebrcount;
+    }
+    vert->compress_degree();
+
+    // free vertex buffer on dram
+    buffer_t* vbuf = vert->get_vbuf();
+    if(vbuf) thd_mem->free_vbuf(vbuf, vbuf->get_size());
+    vert->set_vbuf(0);
 }

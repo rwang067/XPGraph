@@ -51,7 +51,9 @@ public:
     void alloc_elog_data();
     void free_elog_data();
     void alloc_pblk_pools();
+    void alloc_pblk_pools(mempool_t** &_pblk_pools, std::string pblk_name);
     void free_pblk_pools();
+    void free_pblk_pools(mempool_t** &_pblk_pools);
     void alloc_vbuf_pool();
     void free_vbuf_pool();
     void alloc_vert_pool();
@@ -119,6 +121,7 @@ public:
     bool compact_adjlists(vid_t vid, bool is_in_graph);
     bool compact_all_adjlists();
     void compress_all_graph();
+    void compact_all_graph();
     void print_edgeshard(){
         edge_shard->print_edgesum_per_thread();
     }
@@ -234,6 +237,41 @@ inline void levelgraph_t::alloc_pblk_pools(){
     }
     // FIRST_BLOCK_MARK = (index_t)pblk_pool0->get_base();
 }
+inline void levelgraph_t::alloc_pblk_pools(mempool_t** &_pblk_pools, std::string pblk_name) {
+    _pblk_pools = (mempool_t**)calloc(sizeof(mempool_t*), NUM_SOCKETS);
+    
+    size_t size = PBLK_POOL_SIZE / NUM_SOCKETS;
+    char* start;
+    // alloc for NVM mempool 0
+    if(DRAMONLY == 0){
+        std::string mempool_file0 = NVMPATH0 + pblk_name + ".txt";
+        start = (char*)pmem_alloc(mempool_file0.c_str(), size);
+        logstream(LOG_WARNING) << "pblk_mempool alloced " << size/GB << "GB on PMEM,  tid = " << omp_get_thread_num() << std::endl;
+    } else {
+        start = (char*)malloc(size);
+        assert(start);
+        logstream(LOG_WARNING) << "pblk_mempool alloced " << size/GB << "GB on DRAM,  tid = " << omp_get_thread_num() << std::endl;
+    }
+    std::string mempool_0 = NVMPATH0 + pblk_name + "_0";
+    _pblk_pools[0] = new mempool_t();
+    _pblk_pools[0]->init(start, size, XPLINE_SIZE, mempool_0.c_str());
+    
+    if(NUM_SOCKETS > 1){
+        // alloc for NVM mempool 1
+        if(DRAMONLY == 0){
+            std::string mempool_file1 = NVMPATH1 + pblk_name + ".txt";
+            start = (char*)pmem_alloc(mempool_file1.c_str(), size);
+            logstream(LOG_WARNING) << "pblk_mempool alloced " << size/GB << "GB on PMEM,  tid = " << omp_get_thread_num() << std::endl;
+        } else {
+            start = (char*)malloc(size);
+            assert(start);
+            logstream(LOG_WARNING) << "pblk_mempool alloced " << size/GB << "GB on DRAM,  tid = " << omp_get_thread_num() << std::endl;
+        }
+        std::string mempool_1 = NVMPATH0 + pblk_name + "_1";
+        _pblk_pools[1] = new mempool_t();
+        _pblk_pools[1]->init(start, size, XPLINE_SIZE, mempool_1.c_str());
+    }
+}
 inline void levelgraph_t::free_pblk_pools(){
     size_t size = PBLK_POOL_SIZE / NUM_SOCKETS;
     if(NUM_SOCKETS > 1){
@@ -253,6 +291,26 @@ inline void levelgraph_t::free_pblk_pools(){
     }
     delete pblk_pools[0];
     free(pblk_pools);
+}
+inline void levelgraph_t::free_pblk_pools(mempool_t** &_pblk_pools) {
+    size_t size = PBLK_POOL_SIZE / NUM_SOCKETS;
+    if(NUM_SOCKETS > 1){
+        _pblk_pools[1]->clear();
+        if(DRAMONLY == 0){
+            pmem_unmap(_pblk_pools[1]->get_base(), size);
+        } else {
+            free(_pblk_pools[1]->get_base());
+        }
+        delete _pblk_pools[1];
+    }
+    _pblk_pools[0]->clear();
+    if(DRAMONLY == 0){
+        pmem_unmap(_pblk_pools[0]->get_base(), size);
+    } else {
+        free(_pblk_pools[0]->get_base());
+    }
+    delete _pblk_pools[0];
+    free(_pblk_pools);
 }
 
 inline void levelgraph_t::alloc_vbuf_pool(){
@@ -611,10 +669,30 @@ bool levelgraph_t::compact_all_adjlists(){
     return true;
 }
 
+// compress only delete vertex
 void levelgraph_t::compress_all_graph() {
     #pragma omp parallel num_threads (THD_COUNT) 
     {
         out_graph->compress();
         in_graph->compress();
     }
+}
+
+// compact all vertices
+void levelgraph_t::compact_all_graph() {
+    mempool_t** new_pblk_pools = NULL;
+    std::string new_pblk_name = "pblk_pools_new";
+    alloc_pblk_pools(new_pblk_pools, new_pblk_name);
+    printf("old_pblk_pools[0] = %p, old_pblk_pools[1] = %p\n", this->pblk_pools[0]->get_base(), this->pblk_pools[1]->get_base());
+    printf("new_pblk_pools[0] = %p, new_pblk_pools[1] = %p\n", new_pblk_pools[0]->get_base(), new_pblk_pools[1]->get_base());
+    out_graph->set_pblk_pools(new_pblk_pools);
+    in_graph->set_pblk_pools(new_pblk_pools);
+
+    #pragma omp parallel num_threads (THD_COUNT) 
+    {
+        out_graph->compact();
+        in_graph->compact();
+    }
+    free_pblk_pools(this->pblk_pools);
+    this->pblk_pools = new_pblk_pools;
 }

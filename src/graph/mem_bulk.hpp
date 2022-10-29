@@ -75,6 +75,15 @@ class thd_mem_t {
         return mem + tid;  
     }
 
+    inline void set_pblk_pools(mempool_t** new_pblk_pools) {
+        pblk_pools = new_pblk_pools;
+        for (int i = 0; i < THD_COUNT; ++i) {
+            mem[i].paddr = NULL;
+            mem[i].psize = 0;
+            mem[i].free_pblks = NULL;
+        }
+    }
+
     void print_free_vbufs_size(){
         for(tid_t tid = 0; tid < THD_COUNT; tid++){
             mem_bulk_t* mem1 = mem + tid;
