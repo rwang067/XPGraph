@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <libxpgraph.h>
 
-inline void print_bfs_summary(uint8_t* status, uint8_t level, vid_t v_count, vid_t root){
+inline void print_bfs_summary(uint16_t* status, uint16_t level, vid_t v_count, vid_t root){
     vid_t sum = 0;
     for (int l = 1; l < level; ++l) {
         vid_t vid_count = 0;
@@ -42,7 +42,7 @@ index_t test_bfs(XPGraph* xpgraph, index_t root_count){
         vid_t			frontier   = 0;
         
         // double start1 = mywtime();
-        uint8_t* status = new uint8_t[v_count];
+        uint16_t* status = new uint16_t[v_count];
         status[root] = level;
         
         total_count += 1; 
@@ -149,10 +149,10 @@ index_t test_bfs_numa(XPGraph* xpgraph, index_t root_count){
         vid_t			frontier   = 0;
 
         // double start1 = mywtime();
-        uint8_t* status = new uint8_t[v_count];
+        uint16_t* status = new uint16_t[v_count];
         status[root] = level;
 
-        // uint8_t NUM_SOCKETS = 2;
+        // uint16_t NUM_SOCKETS = 2;
         // tid_t ncores_per_socket = omp_get_max_threads() / NUM_SOCKETS / 2; //24
         
         index_t total_count = 1; 
